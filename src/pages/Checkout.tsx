@@ -43,8 +43,17 @@ const Checkout = () => {
         paymentMethod: form.paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment",
         status: "Pending",
       };
-      await addDocument("orders", orderData);
-      await sendTelegramNotification({
+      // Try Firebase first, fallback to localStorage
+      try {
+        await addDocument("orders", orderData);
+      } catch (firebaseErr) {
+        console.warn("Firebase write failed, saving locally:", firebaseErr);
+        const localOrders = JSON.parse(localStorage.getItem("pharmacy_orders") || "[]");
+        localOrders.unshift({ ...orderData, id: orderId, createdAt: { seconds: Math.floor(Date.now() / 1000) } });
+        localStorage.setItem("pharmacy_orders", JSON.stringify(localOrders));
+      }
+      // Telegram notification (non-blocking)
+      sendTelegramNotification({
         orderId,
         customerName: form.name,
         customerPhone: form.phone,
@@ -52,7 +61,7 @@ const Checkout = () => {
         totalAmount,
         address: `${form.address}, ${form.city} - ${form.pincode}`,
         paymentMethod: orderData.paymentMethod,
-      });
+      }).catch(() => {});
       clearCart();
       toast.success("Order placed successfully!");
       navigate("/orders");

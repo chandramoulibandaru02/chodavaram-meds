@@ -19,10 +19,23 @@ const Orders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
+        let allOrders: any[] = [];
+        // Try Firebase
         if (user?.uid) {
-          const data = await queryCollection("orders", "userId", "==", user.uid);
-          setOrders(data.sort((a: any, b: any) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
+          try {
+            const data = await queryCollection("orders", "userId", "==", user.uid);
+            allOrders = data;
+          } catch {}
         }
+        // Merge with localStorage orders
+        const localOrders = JSON.parse(localStorage.getItem("pharmacy_orders") || "[]");
+        const localFiltered = user?.uid ? localOrders.filter((o: any) => o.userId === user.uid) : localOrders;
+        // Merge, deduplicate by orderId
+        const seen = new Set(allOrders.map((o: any) => o.orderId));
+        for (const lo of localFiltered) {
+          if (!seen.has(lo.orderId)) allOrders.push(lo);
+        }
+        setOrders(allOrders.sort((a: any, b: any) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0)));
       } catch {} finally {
         setLoading(false);
       }
