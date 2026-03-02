@@ -25,7 +25,7 @@ const Footer = () => (
           <h4 className="font-semibold mb-3">Contact</h4>
           <div className="flex flex-col gap-2 text-sm text-muted-foreground">
             <div className="flex items-center gap-2"><MapPin className="h-4 w-4" /> Chodavaram, AP</div>
-            <div className="flex items-center gap-2"><Phone className="h-4 w-4" /> +91 XXXXX XXXXX</div>
+            <div className="flex items-center gap-2"><Phone className="h-4 w-4" /> +91 77993 03531</div>
             <div className="flex items-center gap-2"><Clock className="h-4 w-4" /> 8AM - 10PM</div>
           </div>
         </div>

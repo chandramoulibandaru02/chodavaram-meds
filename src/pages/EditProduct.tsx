@@ -45,6 +45,11 @@ const EditProduct = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!id || !form.name.trim() || !form.price || !form.stock) { toast.error("Fill required fields"); return; }
+    if (imageFile) {
+      const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+      if (!allowedTypes.includes(imageFile.type)) { toast.error("Only JPG, PNG, WebP, and GIF images allowed"); return; }
+      if (imageFile.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    }
     setLoading(true);
     try {
       let imageURL = form.imageURL;
