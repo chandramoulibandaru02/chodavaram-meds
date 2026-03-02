@@ -19,7 +19,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const ADMIN_PASSWORD = "4321";
+// Admin password from env or fallback
+const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "4321";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -27,7 +28,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    // Check localStorage for existing session
     const savedUser = localStorage.getItem("pharmacy_user");
     const savedAdmin = localStorage.getItem("pharmacy_admin");
     if (savedUser) {
