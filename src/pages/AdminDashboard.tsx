@@ -1,10 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { getCollection, updateDocument, deleteDocument } from "@/services/firebase";
 import { formatPrice } from "@/utils/calculateDiscount";
 import { Button } from "@/components/ui/button";
-import { Plus, Package, Users, DollarSign, AlertTriangle, Edit, Trash2, LogOut } from "lucide-react";
+import { Plus, Package, DollarSign, AlertTriangle, Edit, Trash2, LogOut } from "lucide-react";
 import { toast } from "sonner";
 
 const AdminDashboard = () => {
@@ -14,16 +14,41 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState<"overview" | "products" | "orders">("overview");
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [prods, ords] = await Promise.all([getCollection("products"), getCollection("orders")]);
-      setProducts(prods as any[]);
-      setOrders(ords as any[]);
-    } catch {} finally { setLoading(false); }
-  };
+      let prods: any[] = [];
+      let ords: any[] = [];
 
-  useEffect(() => { fetchData(); }, []);
+      // Fetch products (Firebase + fallback)
+      try {
+        prods = await getCollection("products") as any[];
+      } catch {
+        prods = [];
+      }
+
+      // Fetch orders (Firebase + localStorage merge)
+      try {
+        ords = await getCollection("orders") as any[];
+      } catch {
+        ords = [];
+      }
+
+      // Merge localStorage orders
+      const localOrders = JSON.parse(localStorage.getItem("pharmacy_orders") || "[]");
+      const seenIds = new Set(ords.map((o: any) => o.orderId));
+      for (const lo of localOrders) {
+        if (!seenIds.has(lo.orderId)) {
+          ords.push(lo);
+        }
+      }
+
+      setProducts(prods);
+      setOrders(ords);
+    } catch {} finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   const totalRevenue = orders.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0);
   const lowStock = products.filter((p: any) => p.stock <= 5);
@@ -40,7 +65,15 @@ const AdminDashboard = () => {
 
   const handleUpdateOrderStatus = async (id: string, status: string) => {
     try {
-      await updateDocument("orders", id, { status });
+      // Try Firebase first
+      try {
+        await updateDocument("orders", id, { status });
+      } catch {
+        // Update in localStorage
+        const localOrders = JSON.parse(localStorage.getItem("pharmacy_orders") || "[]");
+        const updated = localOrders.map((o: any) => o.id === id || o.orderId === id ? { ...o, status } : o);
+        localStorage.setItem("pharmacy_orders", JSON.stringify(updated));
+      }
       toast.success(`Order updated to ${status}`);
       fetchData();
     } catch { toast.error("Failed to update"); }
@@ -78,11 +111,11 @@ const AdminDashboard = () => {
             <div className="border rounded-xl p-5 bg-card">
               <h3 className="font-bold mb-3">Pending Orders ({pendingOrders.length})</h3>
               {pendingOrders.slice(0, 5).map((o: any) => (
-                <div key={o.id} className="flex items-center justify-between py-2 border-b last:border-0 text-sm">
+                <div key={o.id || o.orderId} className="flex items-center justify-between py-2 border-b last:border-0 text-sm">
                   <div><span className="font-medium">{o.orderId}</span><span className="text-muted-foreground ml-2">{o.customerName}</span></div>
                   <div className="flex items-center gap-2">
                     <span className="font-bold">{formatPrice(o.totalAmount)}</span>
-                    <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(o.id, "Confirmed")}>Confirm</Button>
+                    <Button size="sm" variant="outline" onClick={() => handleUpdateOrderStatus(o.id || o.orderId, "Confirmed")}>Confirm</Button>
                   </div>
                 </div>
               ))}
@@ -135,7 +168,7 @@ const AdminDashboard = () => {
           {orders.length === 0 ? (
             <p className="text-center py-8 text-muted-foreground">No orders yet</p>
           ) : orders.map((o: any) => (
-            <div key={o.id} className="border rounded-xl p-4 bg-card">
+            <div key={o.id || o.orderId} className="border rounded-xl p-4 bg-card">
               <div className="flex items-center justify-between mb-2">
                 <div><span className="font-bold text-sm">{o.orderId}</span><span className="text-muted-foreground text-sm ml-2">{o.customerName} • {o.customerPhone}</span></div>
                 <span className="font-bold text-primary">{formatPrice(o.totalAmount)}</span>
@@ -145,7 +178,7 @@ const AdminDashboard = () => {
                 <span className="text-xs text-muted-foreground">Status:</span>
                 <select
                   value={o.status}
-                  onChange={(e) => handleUpdateOrderStatus(o.id, e.target.value)}
+                  onChange={(e) => handleUpdateOrderStatus(o.id || o.orderId, e.target.value)}
                   className="h-8 px-2 rounded border bg-card text-sm focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option>Pending</option><option>Confirmed</option><option>Shipped</option><option>Delivered</option>

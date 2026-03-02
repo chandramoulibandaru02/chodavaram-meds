@@ -1,15 +1,15 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, RecaptchaVerifier, signInWithPhoneNumber, signOut as firebaseSignOut, onAuthStateChanged, type User } from "firebase/auth";
 import { getFirestore, collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, serverTimestamp, type DocumentData } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyD2IdmKMuIoJ6Dv6Cu9ZGS3ahUC_cFTS",
-  authDomain: "pharmacy-chodavaram.firebaseapp.com",
-  projectId: "pharmacy-chodavaram",
-  storageBucket: "pharmacy-chodavaram.firebasestorage.app",
-  messagingSenderId: "197057944260",
-  appId: "1:197057944260:web:b936d6c1085df233e48791",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyD2IdmKMuIoJ6Dv6Cu9ZGS3ahUC_cFTS",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "pharmacy-chodavaram.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "pharmacy-chodavaram",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "pharmacy-chodavaram.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "197057944260",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:197057944260:web:b936d6c1085df233e48791",
 };
 
 const app = initializeApp(firebaseConfig);
@@ -65,6 +65,15 @@ export const uploadFile = async (path: string, file: File) => {
   const storageRef = ref(storage, path);
   await uploadBytes(storageRef, file);
   return getDownloadURL(storageRef);
+};
+
+export const deleteFile = async (fileUrl: string) => {
+  try {
+    const storageRef = ref(storage, fileUrl);
+    await deleteObject(storageRef);
+  } catch (error) {
+    console.warn("Failed to delete file from storage:", error);
+  }
 };
 
 export { onAuthStateChanged, type User };
