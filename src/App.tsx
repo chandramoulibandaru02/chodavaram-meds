@@ -22,6 +22,7 @@ const Orders = lazy(() => import("@/pages/Orders"));
 const AdminDashboard = lazy(() => import("@/pages/AdminDashboard"));
 const AddProduct = lazy(() => import("@/pages/AddProduct"));
 const EditProduct = lazy(() => import("@/pages/EditProduct"));
+const OrderSuccess = lazy(() => import("@/pages/OrderSuccess"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -53,6 +54,7 @@ const App = () => (
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
                     <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+                    <Route path="/order-success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
                     <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
                     <Route path="/admin/add-product" element={<AdminRoute><AddProduct /></AdminRoute>} />
                     <Route path="/admin/edit-product/:id" element={<AdminRoute><EditProduct /></AdminRoute>} />

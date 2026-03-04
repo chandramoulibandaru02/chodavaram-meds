@@ -32,7 +32,7 @@
     --input: 140 15% 88%;
     --ring: 160 60% 36%;
 
-    --radius: 0.625rem;
+    --radius: 0.75rem;
 
     --offer: 25 95% 53%;
     --offer-foreground: 0 0% 100%;
@@ -40,6 +40,8 @@
     --success-foreground: 0 0% 100%;
     --warning: 38 92% 50%;
     --warning-foreground: 0 0% 100%;
+    --info: 210 80% 55%;
+    --info-foreground: 0 0% 100%;
 
     --sidebar-background: 160 30% 97%;
     --sidebar-foreground: 200 25% 15%;
@@ -71,6 +73,8 @@
     --border: 200 20% 18%;
     --input: 200 20% 18%;
     --ring: 160 60% 45%;
+    --info: 210 80% 55%;
+    --info-foreground: 0 0% 100%;
     --sidebar-background: 200 25% 10%;
     --sidebar-foreground: 140 10% 94%;
     --sidebar-primary: 160 60% 45%;
@@ -90,19 +94,52 @@
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 @layer utilities {
   .gradient-pharmacy {
-    background: linear-gradient(135deg, hsl(160 60% 36%), hsl(170 55% 42%));
+    background: linear-gradient(135deg, hsl(160 60% 36%), hsl(170 55% 42%), hsl(160 50% 48%));
   }
   .gradient-offer {
     background: linear-gradient(135deg, hsl(25 95% 53%), hsl(15 90% 50%));
   }
+  .gradient-hero {
+    background: linear-gradient(135deg, hsl(160 60% 36%) 0%, hsl(170 55% 42%) 40%, hsl(180 50% 45%) 100%);
+  }
+  .gradient-success {
+    background: linear-gradient(135deg, hsl(142 70% 45%), hsl(152 60% 50%));
+  }
   .shadow-pharmacy {
-    box-shadow: 0 4px 20px -4px hsl(160 60% 36% / 0.2);
+    box-shadow: 0 8px 30px -4px hsl(160 60% 36% / 0.2);
   }
   .shadow-card {
-    box-shadow: 0 2px 12px -2px hsl(200 25% 10% / 0.08);
+    box-shadow: 0 2px 12px -2px hsl(200 25% 10% / 0.06);
+  }
+  .shadow-elevated {
+    box-shadow: 0 12px 40px -8px hsl(200 25% 10% / 0.12);
+  }
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(160 60% 36%), hsl(170 55% 42%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  /* Glass effect */
+  .glass {
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    background: hsl(var(--card) / 0.8);
+  }
+  /* Pulse glow for important elements */
+  .pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+  @keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 0 hsl(160 60% 36% / 0.3); }
+    50% { box-shadow: 0 0 20px 4px hsl(160 60% 36% / 0.15); }
   }
 }
