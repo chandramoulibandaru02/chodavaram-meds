@@ -223,53 +223,86 @@ const AdminDashboard = () => {
 
       {/* Products Tab */}
       {tab === "products" && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="border rounded-xl overflow-hidden bg-card">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-secondary/50">
-                <tr>
-                  <th className="text-left p-3 font-semibold">Product</th>
-                  <th className="text-left p-3 font-semibold">Price</th>
-                  <th className="text-left p-3 font-semibold">Discount</th>
-                  <th className="text-left p-3 font-semibold">Stock</th>
-                  <th className="text-right p-3 font-semibold">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredProducts.length === 0 ? (
-                  <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">
-                    {searchQuery ? "No products match your search" : "No products yet. Add your first product!"}
-                  </td></tr>
-                ) : filteredProducts.map((p: any) => (
-                  <tr key={p.id} className="border-t hover:bg-secondary/20 transition-colors">
-                    <td className="p-3">
-                      <div className="flex items-center gap-3">
-                        <img src={p.imageURL || "/placeholder.svg"} alt="" className="w-10 h-10 rounded-lg object-cover bg-secondary/50" />
-                        <div>
-                          <p className="font-medium">{p.name}</p>
-                          <p className="text-xs text-muted-foreground">{p.category}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-3 font-medium">{formatPrice(p.price)}</td>
-                    <td className="p-3">
-                      {p.discount > 0 ? <span className="bg-accent/10 text-accent text-xs font-bold px-2 py-0.5 rounded">{p.discount}%</span> : <span className="text-muted-foreground">—</span>}
-                    </td>
-                    <td className="p-3">
-                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                        p.stock <= 5 ? "bg-destructive/10 text-destructive" :
-                        p.stock <= 20 ? "bg-warning/10 text-warning" :
-                        "bg-success/10 text-success"
-                      }`}>{p.stock} in stock</span>
-                    </td>
-                    <td className="p-3 text-right">
-                      <Link to={`/admin/edit-product/${p.id}`}><Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button></Link>
-                      <Button variant="ghost" size="icon" onClick={() => handleDeleteProduct(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                    </td>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          {/* Desktop table */}
+          <div className="hidden sm:block border rounded-xl overflow-hidden bg-card">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-secondary/50">
+                  <tr>
+                    <th className="text-left p-3 font-semibold">Product</th>
+                    <th className="text-left p-3 font-semibold">Price</th>
+                    <th className="text-left p-3 font-semibold">Discount</th>
+                    <th className="text-left p-3 font-semibold">Stock</th>
+                    <th className="text-right p-3 font-semibold">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredProducts.length === 0 ? (
+                    <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">
+                      {searchQuery ? "No products match your search" : "No products yet. Add your first product!"}
+                    </td></tr>
+                  ) : filteredProducts.map((p: any) => (
+                    <tr key={p.id} className="border-t hover:bg-secondary/20 transition-colors">
+                      <td className="p-3">
+                        <div className="flex items-center gap-3">
+                          <img src={p.imageURL || "/placeholder.svg"} alt="" className="w-10 h-10 rounded-lg object-cover bg-secondary/50" />
+                          <div>
+                            <p className="font-medium">{p.name}</p>
+                            <p className="text-xs text-muted-foreground">{p.category}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-3 font-medium">{formatPrice(p.price)}</td>
+                      <td className="p-3">
+                        {p.discount > 0 ? <span className="bg-accent/10 text-accent text-xs font-bold px-2 py-0.5 rounded">{p.discount}%</span> : <span className="text-muted-foreground">—</span>}
+                      </td>
+                      <td className="p-3">
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                          p.stock <= 5 ? "bg-destructive/10 text-destructive" :
+                          p.stock <= 20 ? "bg-warning/10 text-warning" :
+                          "bg-success/10 text-success"
+                        }`}>{p.stock} in stock</span>
+                      </td>
+                      <td className="p-3 text-right">
+                        <Link to={`/admin/edit-product/${p.id}`}><Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button></Link>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteProduct(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile card list */}
+          <div className="sm:hidden space-y-3">
+            {filteredProducts.length === 0 ? (
+              <p className="text-center py-8 text-muted-foreground">
+                {searchQuery ? "No products match your search" : "No products yet. Add your first product!"}
+              </p>
+            ) : filteredProducts.map((p: any) => (
+              <div key={p.id} className="border rounded-xl p-3 bg-card flex gap-3 items-start">
+                <img src={p.imageURL || "/placeholder.svg"} alt="" className="w-14 h-14 rounded-lg object-cover bg-secondary/50 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm truncate">{p.name}</p>
+                  <p className="text-xs text-muted-foreground">{p.category}</p>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-bold text-primary text-sm">{formatPrice(p.price)}</span>
+                    {p.discount > 0 && <span className="bg-accent/10 text-accent text-[10px] font-bold px-1.5 py-0.5 rounded">{p.discount}% OFF</span>}
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                      p.stock <= 5 ? "bg-destructive/10 text-destructive" :
+                      p.stock <= 20 ? "bg-warning/10 text-warning" :
+                      "bg-success/10 text-success"
+                    }`}>{p.stock} left</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1 shrink-0">
+                  <Link to={`/admin/edit-product/${p.id}`}><Button variant="ghost" size="icon" className="h-8 w-8"><Edit className="h-3.5 w-3.5" /></Button></Link>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDeleteProduct(p.id)}><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>
+                </div>
+              </div>
+            ))}
           </div>
         </motion.div>
       )}
