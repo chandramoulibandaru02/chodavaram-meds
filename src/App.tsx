@@ -64,6 +64,9 @@ const App = () => (
                 </Suspense>
               </main>
               <Footer />
+              <MobileBottomNav />
+              {/* Bottom nav spacer on mobile */}
+              <div className="h-16 md:hidden" />
             </div>
           </CartProvider>
         </AuthProvider>
