@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { getDocument, updateDocument } from "@/services/firebase";
+import { getDocument, updateDocument, getCollection } from "@/services/firebase";
 import { uploadToImgBB } from "@/services/imgbb";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 
-const CATEGORIES = ["Pain Relief", "Heart Care", "Eye Care", "Baby Care", "Ayurvedic", "Vitamins"];
+const BASE_CATEGORIES = ["Pain Relief", "Heart Care", "Eye Care", "Baby Care", "Ayurvedic", "Vitamins"];
 
 const EditProduct = () => {
   const { id } = useParams();
@@ -15,13 +15,25 @@ const EditProduct = () => {
   const [fetching, setFetching] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [customCategory, setCustomCategory] = useState("");
+  const [categories, setCategories] = useState(BASE_CATEGORIES);
   const [form, setForm] = useState({
-    name: "", description: "", price: "", discount: "0", category: CATEGORIES[0],
+    name: "", description: "", price: "", discount: "0", category: BASE_CATEGORIES[0],
     stock: "", manufacturer: "", expiryDate: "", dosage: "", imageURL: "",
   });
 
   useEffect(() => {
-    const fetch = async () => {
+    const loadData = async () => {
+      // Load dynamic categories
+      try {
+        let prods = await getCollection("products") as any[];
+        const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
+        prods = [...prods, ...localProducts];
+        const cats = new Set(BASE_CATEGORIES);
+        prods.forEach((p: any) => { if (p.category) cats.add(p.category); });
+        setCategories(Array.from(cats));
+      } catch {}
+
+      // Load product
       if (!id) return;
       try {
         const doc = await getDocument("products", id);
@@ -29,15 +41,19 @@ const EditProduct = () => {
           const d = doc as any;
           setForm({
             name: d.name || "", description: d.description || "", price: String(d.price || ""),
-            discount: String(d.discount || "0"), category: d.category || CATEGORIES[0],
+            discount: String(d.discount || "0"), category: d.category || BASE_CATEGORIES[0],
             stock: String(d.stock || ""), manufacturer: d.manufacturer || "",
             expiryDate: d.expiryDate || "", dosage: d.dosage || "", imageURL: d.imageURL || "",
           });
+          // If category is custom, set it
+          if (d.category && !BASE_CATEGORIES.includes(d.category)) {
+            setCustomCategory(d.category);
+          }
         }
       } catch { toast.error("Failed to load product"); }
       setFetching(false);
     };
-    fetch();
+    loadData();
   }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -60,7 +76,7 @@ const EditProduct = () => {
       }
       const price = Number(form.price);
       const discount = Number(form.discount);
-      const finalCategory = (!CATEGORIES.includes(form.category) || form.category === "Other") ? (customCategory.trim() || form.category || "Uncategorized") : form.category;
+      const finalCategory = (!categories.includes(form.category) || form.category === "Other") ? (customCategory.trim() || form.category || "Uncategorized") : form.category;
       await updateDocument("products", id, {
         ...form, price, discount,
         category: finalCategory,
@@ -89,12 +105,12 @@ const EditProduct = () => {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium mb-1 block">Category</label>
-              <select name="category" value={CATEGORIES.includes(form.category) ? form.category : "Other"} onChange={(e) => { handleChange(e); if (e.target.value !== "Other") setCustomCategory(""); }} className="w-full h-10 px-3 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+              <select name="category" value={categories.includes(form.category) ? form.category : "Other"} onChange={(e) => { handleChange(e); if (e.target.value !== "Other") setCustomCategory(""); }} className="w-full h-10 px-3 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                {categories.map(c => <option key={c}>{c}</option>)}
                 <option value="Other">Other (Custom)</option>
               </select>
-              {(!CATEGORIES.includes(form.category) || form.category === "Other") && (
-                <input placeholder="Enter custom category" value={customCategory || (!CATEGORIES.includes(form.category) && form.category !== "Other" ? form.category : "")} onChange={(e) => setCustomCategory(e.target.value)} className="w-full h-10 px-3 mt-2 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              {(!categories.includes(form.category) || form.category === "Other") && (
+                <input placeholder="Enter custom category" value={customCategory || (!categories.includes(form.category) && form.category !== "Other" ? form.category : "")} onChange={(e) => setCustomCategory(e.target.value)} className="w-full h-10 px-3 mt-2 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
               )}
             </div>
             <div><label className="text-sm font-medium mb-1 block">Stock *</label><input name="stock" type="number" min="0" value={form.stock} onChange={handleChange} className="w-full h-10 px-3 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" required /></div>

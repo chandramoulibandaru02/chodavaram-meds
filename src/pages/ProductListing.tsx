@@ -17,7 +17,7 @@ const DEMO_PRODUCTS = [
   { id: "8", name: "Aspirin 75mg", price: 25, discount: 30, category: "Heart Care", stock: 60, imageURL: "", manufacturer: "Bayer" },
 ];
 
-const ALL_CATEGORIES = ["All", "Pain Relief", "Heart Care", "Eye Care", "Baby Care", "Ayurvedic", "Vitamins"];
+const BASE_CATEGORIES = ["Pain Relief", "Heart Care", "Eye Care", "Baby Care", "Ayurvedic", "Vitamins"];
 
 const ProductListing = () => {
   const [searchParams] = useSearchParams();
@@ -46,6 +46,13 @@ const ProductListing = () => {
     };
     fetchProducts();
   }, []);
+
+  // Build dynamic categories from products
+  const allCategories = useMemo(() => {
+    const cats = new Set(BASE_CATEGORIES);
+    products.forEach((p: any) => { if (p.category) cats.add(p.category); });
+    return ["All", ...Array.from(cats)];
+  }, [products]);
 
   const filtered = useMemo(() => {
     let result = [...products];
@@ -82,7 +89,7 @@ const ProductListing = () => {
           <div>
             <h3 className="font-semibold text-sm mb-2.5">Category</h3>
             <div className="flex flex-wrap md:flex-col gap-1.5">
-              {ALL_CATEGORIES.map((cat) => (
+              {allCategories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}

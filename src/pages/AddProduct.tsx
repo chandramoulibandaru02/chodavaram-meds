@@ -1,22 +1,38 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { addDocument } from "@/services/firebase";
+import { addDocument, getCollection } from "@/services/firebase";
 import { uploadToImgBB } from "@/services/imgbb";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 
-const CATEGORIES = ["Pain Relief", "Heart Care", "Eye Care", "Baby Care", "Ayurvedic", "Vitamins"];
+const BASE_CATEGORIES = ["Pain Relief", "Heart Care", "Eye Care", "Baby Care", "Ayurvedic", "Vitamins"];
 
 const AddProduct = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [customCategory, setCustomCategory] = useState("");
+  const [categories, setCategories] = useState(BASE_CATEGORIES);
   const [form, setForm] = useState({
-    name: "", description: "", price: "", discount: "0", category: CATEGORIES[0],
+    name: "", description: "", price: "", discount: "0", category: BASE_CATEGORIES[0],
     stock: "", manufacturer: "", expiryDate: "", dosage: "",
   });
+
+  // Load dynamic categories from existing products
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        let prods = await getCollection("products") as any[];
+        const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
+        prods = [...prods, ...localProducts];
+        const cats = new Set(BASE_CATEGORIES);
+        prods.forEach((p: any) => { if (p.category) cats.add(p.category); });
+        setCategories(Array.from(cats));
+      } catch {}
+    };
+    loadCategories();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -75,7 +91,7 @@ const AddProduct = () => {
             <div>
               <label className="text-sm font-medium mb-1 block">Category</label>
               <select name="category" value={form.category} onChange={(e) => { handleChange(e); if (e.target.value !== "Other") setCustomCategory(""); }} className="w-full h-10 px-3 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                {categories.map(c => <option key={c}>{c}</option>)}
                 <option value="Other">Other (Custom)</option>
               </select>
               {form.category === "Other" && (

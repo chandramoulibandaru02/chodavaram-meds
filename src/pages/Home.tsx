@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { Search, ChevronRight, Pill, Heart, Eye, Baby, Leaf, Activity, Star, TrendingUp, Clock, Shield } from "lucide-react";
+import { Search, ChevronRight, Pill, Heart, Eye, Baby, Leaf, Activity, Star, TrendingUp, Clock, Shield, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ProductCard from "@/components/ProductCard";
 import { getCollection } from "@/services/firebase";
 import { motion } from "framer-motion";
 
-const CATEGORIES = [
+const BASE_CATEGORIES = [
   { name: "Pain Relief", icon: Pill, color: "bg-primary/10 text-primary" },
   { name: "Heart Care", icon: Heart, color: "bg-destructive/10 text-destructive" },
   { name: "Eye Care", icon: Eye, color: "bg-info/10 text-info" },
@@ -53,6 +53,20 @@ const Home = () => {
     };
     fetchProducts();
   }, []);
+
+  // Dynamic categories: base + any custom from products
+  const dynamicCategories = useMemo(() => {
+    const baseNames = new Set(BASE_CATEGORIES.map(c => c.name));
+    const extras: { name: string; icon: typeof Pill; color: string }[] = [];
+    const colors = ["bg-secondary/50 text-secondary-foreground", "bg-accent/10 text-accent", "bg-primary/10 text-primary", "bg-info/10 text-info"];
+    products.forEach((p: any) => {
+      if (p.category && !baseNames.has(p.category)) {
+        baseNames.add(p.category);
+        extras.push({ name: p.category, icon: Package, color: colors[extras.length % colors.length] });
+      }
+    });
+    return [...BASE_CATEGORIES, ...extras];
+  }, [products]);
 
   return (
     <div className="min-h-screen">
@@ -133,7 +147,7 @@ const Home = () => {
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
           <h2 className="text-2xl font-bold mb-6">Shop by Category</h2>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
-            {CATEGORIES.map((cat, i) => (
+            {dynamicCategories.map((cat, i) => (
               <motion.div key={cat.name} variants={fadeUp} custom={i}>
                 <Link
                   to={`/products?category=${encodeURIComponent(cat.name)}`}
