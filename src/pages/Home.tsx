@@ -6,7 +6,7 @@ import ProductCard from "@/components/ProductCard";
 import { getCollection } from "@/services/firebase";
 import { motion } from "framer-motion";
 
-const CATEGORIES = [
+const BASE_CATEGORIES = [
   { name: "Pain Relief", icon: Pill, color: "bg-primary/10 text-primary" },
   { name: "Heart Care", icon: Heart, color: "bg-destructive/10 text-destructive" },
   { name: "Eye Care", icon: Eye, color: "bg-info/10 text-info" },
