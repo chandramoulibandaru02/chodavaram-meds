@@ -355,6 +355,11 @@ const AdminDashboard = () => {
                 <p className="text-xs text-muted-foreground">📍 {o.address}</p>
               </div>
               {o.customerPhone && <p className="text-xs text-muted-foreground mt-2">📞 {o.customerPhone}</p>}
+              <div className="flex justify-end mt-2">
+                <Button variant="ghost" size="sm" className="text-destructive h-7 text-xs" onClick={() => handleDeleteOrder(o.id || o.orderId, o.orderId)}>
+                  <Trash2 className="h-3 w-3 mr-1" /> Delete
+                </Button>
+              </div>
             </div>
           ))}
         </motion.div>
