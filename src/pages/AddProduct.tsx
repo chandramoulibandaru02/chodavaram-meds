@@ -12,6 +12,7 @@ const AddProduct = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [customCategory, setCustomCategory] = useState("");
   const [form, setForm] = useState({
     name: "", description: "", price: "", discount: "0", category: CATEGORIES[0],
     stock: "", manufacturer: "", expiryDate: "", dosage: "",
