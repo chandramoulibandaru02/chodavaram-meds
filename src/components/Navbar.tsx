@@ -2,8 +2,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { ShoppingCart, User, Menu, X, Search, LogOut, Shield } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
+import { useDebounce } from "@/hooks/use-debounce";
 
 const Navbar = () => {
   const { totalItems } = useCart();
@@ -12,13 +13,14 @@ const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery("");
+      setMenuOpen(false);
     }
-  };
+  }, [searchQuery, navigate]);
 
   return (
     <header className="sticky top-0 z-50 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
@@ -31,20 +33,20 @@ const Navbar = () => {
 
         {/* Search */}
         <form onSubmit={handleSearch} className="flex-1 max-w-md hidden md:flex">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative w-full group">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
             <input
               type="text"
               placeholder="Search medicines..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full h-10 pl-10 pr-4 rounded-lg border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full h-10 pl-10 pr-4 rounded-lg border bg-secondary/50 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 focus:bg-card transition-all"
             />
           </div>
         </form>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex items-center gap-2">
+        <nav className="hidden md:flex items-center gap-1">
           <Link to="/products">
             <Button variant="ghost" size="sm">All Medicines</Button>
           </Link>
@@ -55,8 +57,8 @@ const Navbar = () => {
           )}
           {isAdmin && (
             <Link to="/admin">
-              <Button variant="ghost" size="sm" className="text-primary">
-                <Shield className="h-4 w-4 mr-1" />Admin
+              <Button variant="ghost" size="sm" className="text-primary gap-1">
+                <Shield className="h-4 w-4" />Admin
               </Button>
             </Link>
           )}
@@ -65,16 +67,16 @@ const Navbar = () => {
               <Button variant="ghost" size="icon">
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                    {totalItems}
+                  <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold animate-fade-in">
+                    {totalItems > 99 ? "99+" : totalItems}
                   </span>
                 )}
               </Button>
             </Link>
           )}
           {user ? (
-            <Button variant="ghost" size="sm" onClick={logout}>
-              <LogOut className="h-4 w-4 mr-1" />Logout
+            <Button variant="ghost" size="sm" onClick={logout} className="gap-1 text-muted-foreground hover:text-destructive">
+              <LogOut className="h-4 w-4" />Logout
             </Button>
           ) : (
             <Link to="/login">
@@ -91,7 +93,7 @@ const Navbar = () => {
                 <ShoppingCart className="h-5 w-5" />
                 {totalItems > 0 && (
                   <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
-                    {totalItems}
+                    {totalItems > 99 ? "99+" : totalItems}
                   </span>
                 )}
               </Button>
@@ -105,7 +107,7 @@ const Navbar = () => {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden border-t bg-card p-4 animate-slide-in">
+        <div className="md:hidden border-t bg-card p-4 animate-fade-in">
           <form onSubmit={handleSearch} className="mb-3">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -119,13 +121,13 @@ const Navbar = () => {
             </div>
           </form>
           <div className="flex flex-col gap-1">
-            <Link to="/products" onClick={() => setMenuOpen(false)} className="px-3 py-2 rounded-md hover:bg-secondary text-sm">All Medicines</Link>
-            {user && !isAdmin && <Link to="/orders" onClick={() => setMenuOpen(false)} className="px-3 py-2 rounded-md hover:bg-secondary text-sm">My Orders</Link>}
-            {isAdmin && <Link to="/admin" onClick={() => setMenuOpen(false)} className="px-3 py-2 rounded-md hover:bg-secondary text-sm text-primary font-medium">Admin Dashboard</Link>}
+            <Link to="/products" onClick={() => setMenuOpen(false)} className="px-3 py-2.5 rounded-lg hover:bg-secondary text-sm font-medium transition-colors">All Medicines</Link>
+            {user && !isAdmin && <Link to="/orders" onClick={() => setMenuOpen(false)} className="px-3 py-2.5 rounded-lg hover:bg-secondary text-sm font-medium transition-colors">My Orders</Link>}
+            {isAdmin && <Link to="/admin" onClick={() => setMenuOpen(false)} className="px-3 py-2.5 rounded-lg hover:bg-secondary text-sm font-medium text-primary transition-colors">Admin Dashboard</Link>}
             {user ? (
-              <button onClick={() => { logout(); setMenuOpen(false); }} className="px-3 py-2 rounded-md hover:bg-secondary text-sm text-left text-destructive">Logout</button>
+              <button onClick={() => { logout(); setMenuOpen(false); }} className="px-3 py-2.5 rounded-lg hover:bg-destructive/10 text-sm text-left text-destructive font-medium transition-colors">Logout</button>
             ) : (
-              <Link to="/login" onClick={() => setMenuOpen(false)} className="px-3 py-2 rounded-md hover:bg-secondary text-sm">Login</Link>
+              <Link to="/login" onClick={() => setMenuOpen(false)} className="px-3 py-2.5 rounded-lg hover:bg-secondary text-sm font-medium transition-colors">Login</Link>
             )}
           </div>
         </div>

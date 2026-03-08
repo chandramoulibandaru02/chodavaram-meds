@@ -10,6 +10,7 @@ import { ProtectedRoute, AdminRoute } from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import Footer from "@/components/Footer";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 // Lazy-loaded pages
 const Home = lazy(() => import("@/pages/Home"));
@@ -30,7 +31,10 @@ const queryClient = new QueryClient();
 
 const PageLoader = () => (
   <div className="flex min-h-[60vh] items-center justify-center">
-    <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+    <div className="flex flex-col items-center gap-3">
+      <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      <p className="text-sm text-muted-foreground animate-pulse">Loading...</p>
+    </div>
   </div>
 );
 
@@ -42,32 +46,33 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <CartProvider>
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-1">
-                <Suspense fallback={<PageLoader />}>
-                  <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/admin/login" element={<AdminLogin />} />
-                    <Route path="/products" element={<ProductListing />} />
-                    <Route path="/product/:id" element={<ProductDetails />} />
-                    <Route path="/cart" element={<Cart />} />
-                    <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-                    <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
-                    <Route path="/order-success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
-                    <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-                    <Route path="/admin/add-product" element={<AdminRoute><AddProduct /></AdminRoute>} />
-                    <Route path="/admin/edit-product/:id" element={<AdminRoute><EditProduct /></AdminRoute>} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-              </main>
-              <Footer />
-              <MobileBottomNav />
-              {/* Bottom nav spacer on mobile */}
-              <div className="h-16 md:hidden" />
-            </div>
+            <ErrorBoundary>
+              <div className="flex flex-col min-h-screen">
+                <Navbar />
+                <main className="flex-1">
+                  <Suspense fallback={<PageLoader />}>
+                    <Routes>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/admin/login" element={<AdminLogin />} />
+                      <Route path="/products" element={<ProductListing />} />
+                      <Route path="/product/:id" element={<ProductDetails />} />
+                      <Route path="/cart" element={<Cart />} />
+                      <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                      <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} />
+                      <Route path="/order-success" element={<ProtectedRoute><OrderSuccess /></ProtectedRoute>} />
+                      <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+                      <Route path="/admin/add-product" element={<AdminRoute><AddProduct /></AdminRoute>} />
+                      <Route path="/admin/edit-product/:id" element={<AdminRoute><EditProduct /></AdminRoute>} />
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                </main>
+                <Footer />
+                <MobileBottomNav />
+                <div className="h-16 md:hidden" />
+              </div>
+            </ErrorBoundary>
           </CartProvider>
         </AuthProvider>
       </BrowserRouter>
