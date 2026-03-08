@@ -33,7 +33,7 @@ const AddProduct = () => {
     try {
       let imageURL = "";
       if (imageFile) {
-        imageURL = await uploadFile(`products/${Date.now()}_${imageFile.name}`, imageFile);
+        imageURL = await uploadToImgBB(imageFile);
       }
       const price = Number(form.price);
       const discount = Number(form.discount);
