@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { getDocument, updateDocument, uploadFile } from "@/services/firebase";
+import { getDocument, updateDocument } from "@/services/firebase";
+import { uploadToImgBB } from "@/services/imgbb";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 
