@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { Search, ChevronRight, Pill, Heart, Eye, Baby, Leaf, Activity, Star, TrendingUp, Clock, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
