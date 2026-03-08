@@ -6,23 +6,12 @@ import { Button } from "@/components/ui/button";
 import { SlidersHorizontal, X, Package } from "lucide-react";
 import { motion } from "framer-motion";
 
-const DEMO_PRODUCTS = [
-  { id: "1", name: "Paracetamol 500mg", price: 35, discount: 10, category: "Pain Relief", stock: 50, imageURL: "", manufacturer: "Cipla" },
-  { id: "2", name: "Cetirizine 10mg", price: 45, discount: 15, category: "Vitamins", stock: 30, imageURL: "", manufacturer: "Sun Pharma" },
-  { id: "3", name: "Amoxicillin 250mg", price: 120, discount: 20, category: "Pain Relief", stock: 25, imageURL: "", manufacturer: "Dr. Reddy's" },
-  { id: "4", name: "Vitamin D3 60K", price: 180, discount: 25, category: "Vitamins", stock: 40, imageURL: "", manufacturer: "USV" },
-  { id: "5", name: "Dabur Chyawanprash", price: 350, discount: 12, category: "Ayurvedic", stock: 20, imageURL: "", manufacturer: "Dabur" },
-  { id: "6", name: "Baby Gripe Water", price: 95, discount: 5, category: "Baby Care", stock: 15, imageURL: "", manufacturer: "Woodward's" },
-  { id: "7", name: "Eye Drops Refresh", price: 110, discount: 8, category: "Eye Care", stock: 35, imageURL: "", manufacturer: "Allergan" },
-  { id: "8", name: "Aspirin 75mg", price: 25, discount: 30, category: "Heart Care", stock: 60, imageURL: "", manufacturer: "Bayer" },
-];
-
 const BASE_CATEGORIES = ["Pain Relief", "Heart Care", "Eye Care", "Baby Care", "Ayurvedic", "Vitamins"];
 
 const ProductListing = () => {
   const [searchParams] = useSearchParams();
-  const [products, setProducts] = useState(DEMO_PRODUCTS);
-  const [loading, setLoading] = useState(false);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("default");
   const [showFilters, setShowFilters] = useState(false);
@@ -41,7 +30,7 @@ const ProductListing = () => {
         const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
         const seenIds = new Set(data.map((p: any) => p.id));
         for (const lp of localProducts) { if (!seenIds.has(lp.id)) data.push(lp); }
-        if (data.length > 0) setProducts(data as any);
+        setProducts(data);
       } catch {} finally { setLoading(false); }
     };
     fetchProducts();
