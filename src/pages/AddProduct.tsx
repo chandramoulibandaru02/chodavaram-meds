@@ -13,10 +13,26 @@ const AddProduct = () => {
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [customCategory, setCustomCategory] = useState("");
+  const [categories, setCategories] = useState(BASE_CATEGORIES);
   const [form, setForm] = useState({
-    name: "", description: "", price: "", discount: "0", category: CATEGORIES[0],
+    name: "", description: "", price: "", discount: "0", category: BASE_CATEGORIES[0],
     stock: "", manufacturer: "", expiryDate: "", dosage: "",
   });
+
+  // Load dynamic categories from existing products
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        let prods = await getCollection("products") as any[];
+        const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
+        prods = [...prods, ...localProducts];
+        const cats = new Set(BASE_CATEGORIES);
+        prods.forEach((p: any) => { if (p.category) cats.add(p.category); });
+        setCategories(Array.from(cats));
+      } catch {}
+    };
+    loadCategories();
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
