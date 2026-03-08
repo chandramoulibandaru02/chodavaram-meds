@@ -17,7 +17,7 @@ const DEMO_PRODUCTS = [
   { id: "8", name: "Aspirin 75mg", price: 25, discount: 30, category: "Heart Care", stock: 60, imageURL: "", manufacturer: "Bayer" },
 ];
 
-const ALL_CATEGORIES = ["All", "Pain Relief", "Heart Care", "Eye Care", "Baby Care", "Ayurvedic", "Vitamins"];
+const BASE_CATEGORIES = ["Pain Relief", "Heart Care", "Eye Care", "Baby Care", "Ayurvedic", "Vitamins"];
 
 const ProductListing = () => {
   const [searchParams] = useSearchParams();
