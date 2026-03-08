@@ -97,15 +97,15 @@ const AdminDashboard = () => {
   return (
     <div className="container py-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Admin Dashboard</h1>
           <p className="text-sm text-muted-foreground">Manage your pharmacy inventory and orders</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button variant="outline" size="sm" onClick={fetchData}><RefreshCw className="h-4 w-4" /></Button>
-          <Link to="/admin/add-product"><Button size="sm"><Plus className="h-4 w-4 mr-1" />Add Product</Button></Link>
-          <Button variant="outline" size="sm" onClick={adminLogout}><LogOut className="h-4 w-4 mr-1" />Logout</Button>
+          <Link to="/admin/add-product"><Button size="sm"><Plus className="h-4 w-4 mr-1" />Add</Button></Link>
+          <Button variant="outline" size="sm" onClick={adminLogout}><LogOut className="h-4 w-4 mr-1" /><span className="hidden sm:inline">Logout</span></Button>
         </div>
       </div>
 
