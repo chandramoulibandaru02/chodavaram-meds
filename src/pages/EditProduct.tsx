@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { getDocument, updateDocument, uploadFile } from "@/services/firebase";
+import { getDocument, updateDocument } from "@/services/firebase";
+import { uploadToImgBB } from "@/services/imgbb";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 
@@ -54,7 +55,7 @@ const EditProduct = () => {
     try {
       let imageURL = form.imageURL;
       if (imageFile) {
-        imageURL = await uploadFile(`products/${Date.now()}_${imageFile.name}`, imageFile);
+        imageURL = await uploadToImgBB(imageFile);
       }
       const price = Number(form.price);
       const discount = Number(form.discount);
