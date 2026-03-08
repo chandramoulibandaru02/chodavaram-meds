@@ -40,15 +40,18 @@ const fadeUp = {
 const stagger = { visible: { transition: { staggerChildren: 0.08 } } };
 
 const Home = () => {
-  const [products, setProducts] = useState(DEMO_PRODUCTS);
-  const [loading, setLoading] = useState(false);
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const data = await getCollection("products");
-        if (data.length > 0) setProducts(data as any);
+        let data = await getCollection("products") as any[];
+        const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
+        const seenIds = new Set(data.map((p: any) => p.id));
+        for (const lp of localProducts) { if (!seenIds.has(lp.id)) data.push(lp); }
+        setProducts(data);
       } catch {} finally { setLoading(false); }
     };
     fetchProducts();
