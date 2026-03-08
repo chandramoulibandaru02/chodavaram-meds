@@ -54,6 +54,20 @@ const Home = () => {
     fetchProducts();
   }, []);
 
+  // Dynamic categories: base + any custom from products
+  const dynamicCategories = useMemo(() => {
+    const baseNames = new Set(BASE_CATEGORIES.map(c => c.name));
+    const extras: { name: string; icon: typeof Pill; color: string }[] = [];
+    const colors = ["bg-secondary/50 text-secondary-foreground", "bg-accent/10 text-accent", "bg-primary/10 text-primary", "bg-info/10 text-info"];
+    products.forEach((p: any) => {
+      if (p.category && !baseNames.has(p.category)) {
+        baseNames.add(p.category);
+        extras.push({ name: p.category, icon: Package, color: colors[extras.length % colors.length] });
+      }
+    });
+    return [...BASE_CATEGORIES, ...extras];
+  }, [products]);
+
   return (
     <div className="min-h-screen">
       {/* Hero */}
