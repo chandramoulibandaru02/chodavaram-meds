@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { queryCollection } from "@/services/firebase";
-import { formatPrice } from "@/utils/calculateDiscount";
-import { Package, Clock, CheckCircle, Truck, ChevronDown, ChevronUp } from "lucide-react";
+import { useCart } from "@/context/CartContext";
+import { queryCollection, getCollection } from "@/services/firebase";
+import { formatPrice, calculateFinalPrice } from "@/utils/calculateDiscount";
+import { Package, Clock, CheckCircle, Truck, ChevronDown, ChevronUp, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { toast } from "sonner";
 
 const STATUS_CONFIG: Record<string, { icon: any; color: string; bg: string; step: number }> = {
   Pending: { icon: Clock, color: "text-warning", bg: "bg-warning", step: 1 },
@@ -16,9 +19,42 @@ const STEPS = ["Pending", "Confirmed", "Shipped", "Delivered"];
 
 const Orders = () => {
   const { user } = useAuth();
+  const { addToCart } = useCart();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [products, setProducts] = useState<any[]>([]);
+
+  // Fetch products for reorder stock lookup
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        let data = await getCollection("products") as any[];
+        const local = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
+        const seen = new Set(data.map((p: any) => p.id));
+        for (const lp of local) if (!seen.has(lp.id)) data.push(lp);
+        setProducts(data);
+      } catch {}
+    };
+    fetchProducts();
+  }, []);
+
+  const handleReorder = (order: any) => {
+    let addedCount = 0;
+    order.items?.forEach((item: any) => {
+      const product = products.find((p: any) => p.id === item.id || p.name === item.name);
+      if (product && product.stock > 0) {
+        const finalPrice = calculateFinalPrice(product.price, product.discount);
+        addToCart(
+          { id: product.id, name: product.name, price: product.price, discount: product.discount, finalPrice, imageURL: product.imageURL || "", stock: product.stock },
+          item.quantity
+        );
+        addedCount++;
+      }
+    });
+    if (addedCount > 0) toast.success(`${addedCount} item(s) added to cart`);
+    else toast.error("No items available to reorder");
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -128,7 +164,12 @@ const Orders = () => {
                           </div>
                         </div>
 
-                        <p className="text-xs text-muted-foreground">📍 {order.address}</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-muted-foreground">📍 {order.address}</p>
+                          <Button size="sm" variant="outline" className="gap-1.5" onClick={(e) => { e.stopPropagation(); handleReorder(order); }}>
+                            <RotateCcw className="h-3.5 w-3.5" /> Reorder
+                          </Button>
+                        </div>
                       </div>
                     </motion.div>
                   )}
