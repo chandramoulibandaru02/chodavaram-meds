@@ -1,6 +1,6 @@
 // Telegram Bot API integration for order notifications
-const TELEGRAM_BOT_TOKEN = import.meta.env.VITE_TELEGRAM_BOT_TOKEN || "";
-const TELEGRAM_CHAT_ID = import.meta.env.VITE_TELEGRAM_CHAT_ID || "";
+const TELEGRAM_BOT_TOKEN = "8744731106:AAEXHXwQbBy0gEKxuHs2dnupxBy7amRI9bA";
+const TELEGRAM_CHAT_ID = "6278304991";
 
 interface OrderItem {
   name: string;
