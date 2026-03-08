@@ -19,9 +19,42 @@ const STEPS = ["Pending", "Confirmed", "Shipped", "Delivered"];
 
 const Orders = () => {
   const { user } = useAuth();
+  const { addToCart } = useCart();
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [products, setProducts] = useState<any[]>([]);
+
+  // Fetch products for reorder stock lookup
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        let data = await getCollection("products") as any[];
+        const local = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
+        const seen = new Set(data.map((p: any) => p.id));
+        for (const lp of local) if (!seen.has(lp.id)) data.push(lp);
+        setProducts(data);
+      } catch {}
+    };
+    fetchProducts();
+  }, []);
+
+  const handleReorder = (order: any) => {
+    let addedCount = 0;
+    order.items?.forEach((item: any) => {
+      const product = products.find((p: any) => p.id === item.id || p.name === item.name);
+      if (product && product.stock > 0) {
+        const finalPrice = calculateFinalPrice(product.price, product.discount);
+        addToCart(
+          { id: product.id, name: product.name, price: product.price, discount: product.discount, finalPrice, imageURL: product.imageURL || "", stock: product.stock },
+          item.quantity
+        );
+        addedCount++;
+      }
+    });
+    if (addedCount > 0) toast.success(`${addedCount} item(s) added to cart`);
+    else toast.error("No items available to reorder");
+  };
 
   useEffect(() => {
     const fetchOrders = async () => {
