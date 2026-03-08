@@ -167,7 +167,8 @@ const Home = () => {
         </motion.div>
       </section>
 
-      {/* Best Selling */}
+      {/* Best Selling - only show if admin has added products */}
+      {products.length > 0 && (
       <section className="container py-8">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
           <div className="flex items-center justify-between mb-6">
@@ -191,6 +192,7 @@ const Home = () => {
           )}
         </motion.div>
       </section>
+      )}
 
       {/* Why Choose Us */}
       <section className="container py-10">
