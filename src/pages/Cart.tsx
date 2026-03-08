@@ -35,7 +35,17 @@ const Cart = () => {
                 <div className="flex items-center gap-3 mt-3">
                   <div className="flex items-center border rounded-md">
                     <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-1.5 hover:bg-secondary"><Minus className="h-3 w-3" /></button>
-                    <span className="px-3 text-sm font-medium">{item.quantity}</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={item.stock}
+                      value={item.quantity}
+                      onChange={(e) => {
+                        const val = parseInt(e.target.value);
+                        if (!isNaN(val) && val >= 1) updateQuantity(item.id, Math.min(item.stock, val));
+                      }}
+                      className="w-14 text-center text-sm font-medium bg-transparent border-x focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                    />
                     <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="p-1.5 hover:bg-secondary"><Plus className="h-3 w-3" /></button>
                   </div>
                   <button onClick={() => removeFromCart(item.id)} className="text-destructive hover:text-destructive/80 p-1.5"><Trash2 className="h-4 w-4" /></button>
