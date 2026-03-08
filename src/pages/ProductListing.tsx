@@ -89,7 +89,7 @@ const ProductListing = () => {
           <div>
             <h3 className="font-semibold text-sm mb-2.5">Category</h3>
             <div className="flex flex-wrap md:flex-col gap-1.5">
-              {ALL_CATEGORIES.map((cat) => (
+              {allCategories.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
