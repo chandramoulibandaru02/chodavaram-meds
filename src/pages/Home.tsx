@@ -15,16 +15,6 @@ const BASE_CATEGORIES = [
   { name: "Vitamins", icon: Activity, color: "bg-primary/10 text-primary" },
 ];
 
-const DEMO_PRODUCTS = [
-  { id: "1", name: "Paracetamol 500mg", price: 35, discount: 10, category: "Pain Relief", stock: 50, imageURL: "", manufacturer: "Cipla", description: "Effective fever and pain relief", expiryDate: "2027-12", dosage: "1-2 tablets every 6 hours" },
-  { id: "2", name: "Cetirizine 10mg", price: 45, discount: 15, category: "Vitamins", stock: 30, imageURL: "", manufacturer: "Sun Pharma", description: "Antihistamine for allergies", expiryDate: "2027-06", dosage: "1 tablet daily" },
-  { id: "3", name: "Amoxicillin 250mg", price: 120, discount: 20, category: "Pain Relief", stock: 25, imageURL: "", manufacturer: "Dr. Reddy's", description: "Broad-spectrum antibiotic", expiryDate: "2026-08", dosage: "As prescribed" },
-  { id: "4", name: "Vitamin D3 60K", price: 180, discount: 25, category: "Vitamins", stock: 40, imageURL: "", manufacturer: "USV", description: "Weekly vitamin D supplement", expiryDate: "2028-01", dosage: "1 sachet weekly" },
-  { id: "5", name: "Dabur Chyawanprash", price: 350, discount: 12, category: "Ayurvedic", stock: 20, imageURL: "", manufacturer: "Dabur", description: "Immunity booster", expiryDate: "2027-03", dosage: "1 spoon daily" },
-  { id: "6", name: "Baby Gripe Water", price: 95, discount: 5, category: "Baby Care", stock: 15, imageURL: "", manufacturer: "Woodward's", description: "Relief from colic pain", expiryDate: "2026-11", dosage: "As directed" },
-  { id: "7", name: "Eye Drops Refresh", price: 110, discount: 8, category: "Eye Care", stock: 35, imageURL: "", manufacturer: "Allergan", description: "Lubricating eye drops", expiryDate: "2026-09", dosage: "1-2 drops as needed" },
-  { id: "8", name: "Aspirin 75mg", price: 25, discount: 30, category: "Heart Care", stock: 60, imageURL: "", manufacturer: "Bayer", description: "Blood thinner for heart health", expiryDate: "2027-05", dosage: "1 tablet daily" },
-];
 
 const TESTIMONIALS = [
   { name: "Ravi Kumar", text: "Fast delivery and genuine medicines. Best pharmacy in Chodavaram!", rating: 5 },
