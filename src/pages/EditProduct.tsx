@@ -60,8 +60,10 @@ const EditProduct = () => {
       }
       const price = Number(form.price);
       const discount = Number(form.discount);
+      const finalCategory = (!CATEGORIES.includes(form.category) || form.category === "Other") ? (customCategory.trim() || form.category || "Uncategorized") : form.category;
       await updateDocument("products", id, {
         ...form, price, discount,
+        category: finalCategory,
         finalPrice: Math.round(price - (price * discount) / 100),
         stock: Number(form.stock), imageURL,
       });
