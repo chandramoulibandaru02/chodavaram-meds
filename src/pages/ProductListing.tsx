@@ -68,10 +68,13 @@ const ProductListing = () => {
           </h1>
           <p className="text-sm text-muted-foreground mt-0.5">{filtered.length} product{filtered.length !== 1 ? "s" : ""} found</p>
         </div>
-        <Button variant="outline" size="sm" className="md:hidden" onClick={() => setShowFilters(!showFilters)}>
-          {showFilters ? <X className="h-4 w-4 mr-1" /> : <SlidersHorizontal className="h-4 w-4 mr-1" />}
-          {showFilters ? "Close" : "Filters"}
-        </Button>
+        <div className="flex items-center gap-2">
+          <BulkCSVUpload />
+          <Button variant="outline" size="sm" className="md:hidden" onClick={() => setShowFilters(!showFilters)}>
+            {showFilters ? <X className="h-4 w-4 mr-1" /> : <SlidersHorizontal className="h-4 w-4 mr-1" />}
+            {showFilters ? "Close" : "Filters"}
+          </Button>
+        </div>
       </div>
 
       <div className="flex gap-6">
