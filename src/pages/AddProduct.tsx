@@ -12,6 +12,7 @@ const AddProduct = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [customCategory, setCustomCategory] = useState("");
   const [form, setForm] = useState({
     name: "", description: "", price: "", discount: "0", category: CATEGORIES[0],
     stock: "", manufacturer: "", expiryDate: "", dosage: "",
@@ -37,8 +38,10 @@ const AddProduct = () => {
       }
       const price = Number(form.price);
       const discount = Number(form.discount);
+      const finalCategory = form.category === "Other" ? (customCategory.trim() || "Uncategorized") : form.category;
       const productData = {
         ...form, price, discount,
+        category: finalCategory,
         finalPrice: Math.round(price - (price * discount) / 100),
         stock: Number(form.stock),
         imageURL,
@@ -69,7 +72,16 @@ const AddProduct = () => {
             <div><label className="text-sm font-medium mb-1 block">Discount %</label><input name="discount" type="number" min="0" max="100" value={form.discount} onChange={handleChange} className="w-full h-10 px-3 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div><label className="text-sm font-medium mb-1 block">Category</label><select name="category" value={form.category} onChange={handleChange} className="w-full h-10 px-3 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">{CATEGORIES.map(c => <option key={c}>{c}</option>)}</select></div>
+            <div>
+              <label className="text-sm font-medium mb-1 block">Category</label>
+              <select name="category" value={form.category} onChange={(e) => { handleChange(e); if (e.target.value !== "Other") setCustomCategory(""); }} className="w-full h-10 px-3 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
+                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                <option value="Other">Other (Custom)</option>
+              </select>
+              {form.category === "Other" && (
+                <input placeholder="Enter custom category" value={customCategory} onChange={(e) => setCustomCategory(e.target.value)} className="w-full h-10 px-3 mt-2 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" />
+              )}
+            </div>
             <div><label className="text-sm font-medium mb-1 block">Stock *</label><input name="stock" type="number" min="0" value={form.stock} onChange={handleChange} className="w-full h-10 px-3 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30" required /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
