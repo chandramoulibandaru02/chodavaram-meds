@@ -82,7 +82,18 @@ const ProductDetails = () => {
           <div className="flex items-center gap-3">
             <div className="flex items-center border rounded-lg">
               <button onClick={() => setQty(Math.max(1, qty - 1))} className="px-3 py-2 hover:bg-secondary">−</button>
-              <span className="px-4 py-2 font-medium">{qty}</span>
+              <input
+                type="number"
+                min={1}
+                max={product.stock}
+                value={qty}
+                onChange={(e) => {
+                  const val = parseInt(e.target.value);
+                  if (!isNaN(val)) setQty(Math.max(1, Math.min(product.stock, val)));
+                  else if (e.target.value === "") setQty(1);
+                }}
+                className="w-16 text-center py-2 font-medium bg-transparent border-x focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              />
               <button onClick={() => setQty(Math.min(product.stock, qty + 1))} className="px-3 py-2 hover:bg-secondary">+</button>
             </div>
             <Button
@@ -90,9 +101,7 @@ const ProductDetails = () => {
               className="flex-1"
               disabled={product.stock <= 0}
               onClick={() => {
-                for (let i = 0; i < qty; i++) {
-                  addToCart({ id: product.id, name: product.name, price: product.price, discount: product.discount, finalPrice, imageURL: product.imageURL, stock: product.stock });
-                }
+                addToCart({ id: product.id, name: product.name, price: product.price, discount: product.discount, finalPrice, imageURL: product.imageURL, stock: product.stock }, qty);
               }}
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
