@@ -312,7 +312,12 @@ const AdminDashboard = () => {
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-3">
           <div className="flex items-center justify-between mb-2">
             <p className="text-sm text-muted-foreground">{filteredOrders.length} order{filteredOrders.length !== 1 ? "s" : ""}</p>
-            <Button variant="outline" size="sm" onClick={exportOrders}><Download className="h-4 w-4 mr-1" /> Export CSV</Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={exportOrders}><Download className="h-4 w-4 mr-1" /> Export</Button>
+              {orders.length > 0 && (
+                <Button variant="destructive" size="sm" onClick={handleDeleteAllOrders}><Trash2 className="h-4 w-4 mr-1" /> Delete All</Button>
+              )}
+            </div>
           </div>
           {filteredOrders.length === 0 ? (
             <p className="text-center py-8 text-muted-foreground">{searchQuery ? "No orders match your search" : "No orders yet"}</p>
