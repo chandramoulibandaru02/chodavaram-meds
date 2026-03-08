@@ -47,6 +47,13 @@ const ProductListing = () => {
     fetchProducts();
   }, []);
 
+  // Build dynamic categories from products
+  const allCategories = useMemo(() => {
+    const cats = new Set(BASE_CATEGORIES);
+    products.forEach((p: any) => { if (p.category) cats.add(p.category); });
+    return ["All", ...Array.from(cats)];
+  }, [products]);
+
   const filtered = useMemo(() => {
     let result = [...products];
     if (selectedCategory !== "All") result = result.filter((p) => p.category === selectedCategory);
