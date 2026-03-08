@@ -8,6 +8,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { ProtectedRoute, AdminRoute } from "@/components/ProtectedRoute";
 import Navbar from "@/components/Navbar";
+import MobileBottomNav from "@/components/MobileBottomNav";
 import Footer from "@/components/Footer";
 
 // Lazy-loaded pages
@@ -63,6 +64,9 @@ const App = () => (
                 </Suspense>
               </main>
               <Footer />
+              <MobileBottomNav />
+              {/* Bottom nav spacer on mobile */}
+              <div className="h-16 md:hidden" />
             </div>
           </CartProvider>
         </AuthProvider>
