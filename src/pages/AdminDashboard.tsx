@@ -53,7 +53,15 @@ const AdminDashboard = () => {
   const handleDeleteProduct = async (id: string) => {
     if (!confirm("Delete this product?")) return;
     try {
-      await deleteDocument("products", id);
+      // Try Firebase first
+      try {
+        await deleteDocument("products", id);
+      } catch {
+        // If Firebase fails, delete from localStorage
+        const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
+        const filtered = localProducts.filter((p: any) => p.id !== id);
+        localStorage.setItem("pharmacy_products", JSON.stringify(filtered));
+      }
       toast.success("Product deleted");
       fetchData();
     } catch { toast.error("Failed to delete"); }
