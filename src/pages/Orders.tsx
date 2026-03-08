@@ -164,7 +164,12 @@ const Orders = () => {
                           </div>
                         </div>
 
-                        <p className="text-xs text-muted-foreground">📍 {order.address}</p>
+                        <div className="flex items-center justify-between">
+                          <p className="text-xs text-muted-foreground">📍 {order.address}</p>
+                          <Button size="sm" variant="outline" className="gap-1.5" onClick={(e) => { e.stopPropagation(); handleReorder(order); }}>
+                            <RotateCcw className="h-3.5 w-3.5" /> Reorder
+                          </Button>
+                        </div>
                       </div>
                     </motion.div>
                   )}

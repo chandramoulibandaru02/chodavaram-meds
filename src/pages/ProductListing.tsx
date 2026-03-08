@@ -5,6 +5,7 @@ import { getCollection } from "@/services/firebase";
 import { Button } from "@/components/ui/button";
 import { SlidersHorizontal, X, Package } from "lucide-react";
 import { motion } from "framer-motion";
+import BulkCSVUpload from "@/components/BulkCSVUpload";
 
 const BASE_CATEGORIES = ["Pain Relief", "Heart Care", "Eye Care", "Baby Care", "Ayurvedic", "Vitamins"];
 
