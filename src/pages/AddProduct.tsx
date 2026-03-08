@@ -91,7 +91,7 @@ const AddProduct = () => {
             <div>
               <label className="text-sm font-medium mb-1 block">Category</label>
               <select name="category" value={form.category} onChange={(e) => { handleChange(e); if (e.target.value !== "Other") setCustomCategory(""); }} className="w-full h-10 px-3 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30">
-                {CATEGORIES.map(c => <option key={c}>{c}</option>)}
+                {categories.map(c => <option key={c}>{c}</option>)}
                 <option value="Other">Other (Custom)</option>
               </select>
               {form.category === "Other" && (
