@@ -92,6 +92,30 @@ const AdminDashboard = () => {
     toast.success("Orders exported!");
   };
 
+  const handleDeleteOrder = async (id: string, orderId: string) => {
+    if (!confirm(`Delete order ${orderId}?`)) return;
+    try {
+      try { await deleteDocument("orders", id); } catch {}
+      const localOrders = JSON.parse(localStorage.getItem("pharmacy_orders") || "[]");
+      const filtered = localOrders.filter((o: any) => o.id !== id && o.orderId !== orderId);
+      localStorage.setItem("pharmacy_orders", JSON.stringify(filtered));
+      toast.success("Order deleted");
+      fetchData();
+    } catch { toast.error("Failed to delete order"); }
+  };
+
+  const handleDeleteAllOrders = async () => {
+    if (!confirm(`Delete ALL ${orders.length} orders? This cannot be undone!`)) return;
+    try {
+      for (const o of orders) {
+        try { await deleteDocument("orders", o.id); } catch {}
+      }
+      localStorage.setItem("pharmacy_orders", "[]");
+      toast.success("All orders deleted");
+      fetchData();
+    } catch { toast.error("Failed to delete all orders"); }
+  };
+
   if (loading) return <div className="flex justify-center py-20"><div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" /></div>;
 
   return (
