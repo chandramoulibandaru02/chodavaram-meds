@@ -147,7 +147,7 @@ const Home = () => {
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
           <h2 className="text-2xl font-bold mb-6">Shop by Category</h2>
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-4">
-            {CATEGORIES.map((cat, i) => (
+            {dynamicCategories.map((cat, i) => (
               <motion.div key={cat.name} variants={fadeUp} custom={i}>
                 <Link
                   to={`/products?category=${encodeURIComponent(cat.name)}`}
