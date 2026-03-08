@@ -3,9 +3,10 @@ import { useSearchParams } from "react-router-dom";
 import ProductCard from "@/components/ProductCard";
 import { getCollection } from "@/services/firebase";
 import { Button } from "@/components/ui/button";
-import { SlidersHorizontal, X, Package } from "lucide-react";
+import { SlidersHorizontal, X, Package, LayoutGrid, List } from "lucide-react";
 import { motion } from "framer-motion";
 import BulkCSVUpload from "@/components/BulkCSVUpload";
+import { ProductGridSkeleton } from "@/components/SkeletonLoaders";
 
 const BASE_CATEGORIES = ["Pain Relief", "Heart Care", "Eye Care", "Baby Care", "Ayurvedic", "Vitamins"];
 
@@ -16,6 +17,7 @@ const ProductListing = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("default");
   const [showFilters, setShowFilters] = useState(false);
+  const [view, setView] = useState<"grid" | "list">("grid");
 
   const searchQuery = searchParams.get("search") || "";
   const categoryParam = searchParams.get("category") || "";
@@ -27,7 +29,6 @@ const ProductListing = () => {
       try {
         setLoading(true);
         let data = await getCollection("products") as any[];
-        // Merge local products
         const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
         const seenIds = new Set(data.map((p: any) => p.id));
         for (const lp of localProducts) { if (!seenIds.has(lp.id)) data.push(lp); }
@@ -37,7 +38,6 @@ const ProductListing = () => {
     fetchProducts();
   }, []);
 
-  // Build dynamic categories from products
   const allCategories = useMemo(() => {
     const cats = new Set(BASE_CATEGORIES);
     products.forEach((p: any) => { if (p.category) cats.add(p.category); });
@@ -49,12 +49,13 @@ const ProductListing = () => {
     if (selectedCategory !== "All") result = result.filter((p) => p.category === selectedCategory);
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
-      result = result.filter((p) => p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q));
+      result = result.filter((p) => p.name?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q));
     }
     switch (sortBy) {
       case "low": result.sort((a, b) => a.price - b.price); break;
       case "high": result.sort((a, b) => b.price - a.price); break;
       case "discount": result.sort((a, b) => b.discount - a.discount); break;
+      case "name": result.sort((a, b) => (a.name || "").localeCompare(b.name || "")); break;
     }
     return result;
   }, [products, selectedCategory, sortBy, searchQuery]);
@@ -70,6 +71,15 @@ const ProductListing = () => {
         </div>
         <div className="flex items-center gap-2">
           <BulkCSVUpload />
+          {/* View toggle - desktop only */}
+          <div className="hidden md:flex items-center border rounded-lg overflow-hidden">
+            <button onClick={() => setView("grid")} className={`p-2 transition-colors ${view === "grid" ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}`}>
+              <LayoutGrid className="h-4 w-4" />
+            </button>
+            <button onClick={() => setView("list")} className={`p-2 transition-colors ${view === "list" ? "bg-primary text-primary-foreground" : "hover:bg-secondary"}`}>
+              <List className="h-4 w-4" />
+            </button>
+          </div>
           <Button variant="outline" size="sm" className="md:hidden" onClick={() => setShowFilters(!showFilters)}>
             {showFilters ? <X className="h-4 w-4 mr-1" /> : <SlidersHorizontal className="h-4 w-4 mr-1" />}
             {showFilters ? "Close" : "Filters"}
@@ -82,19 +92,25 @@ const ProductListing = () => {
           <div>
             <h3 className="font-semibold text-sm mb-2.5">Category</h3>
             <div className="flex flex-wrap md:flex-col gap-1.5">
-              {allCategories.map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  className={`text-left text-sm px-3 py-2 rounded-lg transition-all ${
-                    selectedCategory === cat
-                      ? "bg-primary text-primary-foreground font-medium shadow-sm"
-                      : "hover:bg-secondary text-muted-foreground"
-                  }`}
-                >
-                  {cat}
-                </button>
-              ))}
+              {allCategories.map((cat) => {
+                const count = cat === "All" ? products.length : products.filter(p => p.category === cat).length;
+                return (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`text-left text-sm px-3 py-2 rounded-lg transition-all flex items-center justify-between gap-2 ${
+                      selectedCategory === cat
+                        ? "bg-primary text-primary-foreground font-medium shadow-sm"
+                        : "hover:bg-secondary text-muted-foreground"
+                    }`}
+                  >
+                    <span>{cat}</span>
+                    <span className={`text-[10px] font-medium ${selectedCategory === cat ? "text-primary-foreground/70" : "text-muted-foreground/60"}`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
           <div>
@@ -108,25 +124,29 @@ const ProductListing = () => {
               <option value="low">Price: Low to High</option>
               <option value="high">Price: High to Low</option>
               <option value="discount">Best Discount</option>
+              <option value="name">Name: A-Z</option>
             </select>
           </div>
         </aside>
 
         <div className="flex-1">
           {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
-            </div>
+            <ProductGridSkeleton count={6} />
           ) : filtered.length === 0 ? (
             <div className="text-center py-16">
               <Package className="h-16 w-16 mx-auto mb-4 text-muted-foreground/30" />
               <p className="text-lg font-medium text-muted-foreground">No products found</p>
               <p className="text-sm text-muted-foreground mt-1">Try a different search or category</p>
+              {selectedCategory !== "All" && (
+                <Button variant="outline" size="sm" className="mt-4" onClick={() => setSelectedCategory("All")}>
+                  Show All Products
+                </Button>
+              )}
             </div>
           ) : (
             <motion.div
               initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="grid grid-cols-2 md:grid-cols-3 gap-4"
+              className={view === "grid" ? "grid grid-cols-2 md:grid-cols-3 gap-4" : "space-y-3"}
             >
               {filtered.map((product) => (
                 <ProductCard key={product.id} product={product} />

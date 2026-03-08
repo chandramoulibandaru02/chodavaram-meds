@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import ProductCard from "@/components/ProductCard";
 import { getCollection } from "@/services/firebase";
 import { motion } from "framer-motion";
+import { ProductGridSkeleton } from "@/components/SkeletonLoaders";
 
 const BASE_CATEGORIES = [
   { name: "Pain Relief", icon: Pill, color: "bg-primary/10 text-primary" },
@@ -14,7 +15,6 @@ const BASE_CATEGORIES = [
   { name: "Ayurvedic", icon: Leaf, color: "bg-success/10 text-success" },
   { name: "Vitamins", icon: Activity, color: "bg-primary/10 text-primary" },
 ];
-
 
 const TESTIMONIALS = [
   { name: "Ravi Kumar", text: "Fast delivery and genuine medicines. Best pharmacy in Chodavaram!", rating: 5 },
@@ -47,7 +47,6 @@ const Home = () => {
     fetchProducts();
   }, []);
 
-  // Dynamic categories: base + any custom from products
   const dynamicCategories = useMemo(() => {
     const baseNames = new Set(BASE_CATEGORIES.map(c => c.name));
     const extras: { name: string; icon: typeof Pill; color: string }[] = [];
@@ -72,13 +71,13 @@ const Home = () => {
         <div className="container text-center relative">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }}>
             <span className="inline-flex items-center gap-2 bg-primary-foreground/15 text-primary-foreground text-sm font-medium px-4 py-1.5 rounded-full mb-6 backdrop-blur-sm">
-              <TrendingUp className="h-4 w-4" /> Trusted by 1000+ families in Chodavaram
+              <TrendingUp className="h-4 w-4" /> Trusted by 1000+ retailers across Chodavaram
             </span>
             <h1 className="text-4xl md:text-6xl font-bold text-primary-foreground mb-5 leading-tight">
               Your Health,<br />Our <span className="underline decoration-accent/60 decoration-4 underline-offset-4">Priority</span>
             </h1>
             <p className="text-primary-foreground/80 text-lg md:text-xl mb-8 max-w-2xl mx-auto">
-              Quality medicines at affordable prices. Order from home, delivered to your doorstep in Chodavaram.
+              Quality medicines at wholesale prices. Order in bulk, delivered to your doorstep in Chodavaram.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link to="/products">
@@ -108,7 +107,7 @@ const Home = () => {
             { icon: "⭐", value: "4.9/5", label: "Rating" },
             { icon: "👨‍👩‍👧‍👦", value: "1000+", label: "Happy Families" },
           ].map((stat) => (
-            <div key={stat.label} className="bg-card border rounded-xl p-4 text-center shadow-card">
+            <div key={stat.label} className="bg-card border rounded-xl p-4 text-center shadow-card hover:shadow-pharmacy transition-shadow duration-300">
               <span className="text-2xl">{stat.icon}</span>
               <p className="text-xl font-bold mt-1">{stat.value}</p>
               <p className="text-xs text-muted-foreground">{stat.label}</p>
@@ -157,8 +156,7 @@ const Home = () => {
         </motion.div>
       </section>
 
-      {/* Best Selling - only show if admin has added products */}
-      {products.length > 0 && (
+      {/* Best Selling */}
       <section className="container py-8">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
           <div className="flex items-center justify-between mb-6">
@@ -168,8 +166,12 @@ const Home = () => {
             </Link>
           </div>
           {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+            <ProductGridSkeleton count={8} />
+          ) : products.length === 0 ? (
+            <div className="text-center py-12 border rounded-2xl bg-card">
+              <Package className="h-12 w-12 mx-auto mb-3 text-muted-foreground/30" />
+              <p className="text-muted-foreground font-medium">No products added yet</p>
+              <p className="text-sm text-muted-foreground mt-1">Products will appear here once admin adds them</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -182,7 +184,6 @@ const Home = () => {
           )}
         </motion.div>
       </section>
-      )}
 
       {/* Why Choose Us */}
       <section className="container py-10">
@@ -216,7 +217,7 @@ const Home = () => {
           <div className="grid md:grid-cols-3 gap-4">
             {TESTIMONIALS.map((t, i) => (
               <motion.div key={t.name} variants={fadeUp} custom={i}
-                className="p-6 rounded-2xl border bg-card"
+                className="p-6 rounded-2xl border bg-card hover:shadow-card transition-shadow duration-300"
               >
                 <div className="flex gap-0.5 mb-3">
                   {Array.from({ length: t.rating }).map((_, j) => (
