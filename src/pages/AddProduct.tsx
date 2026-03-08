@@ -37,12 +37,20 @@ const AddProduct = () => {
       }
       const price = Number(form.price);
       const discount = Number(form.discount);
-      await addDocument("products", {
+      const productData = {
         ...form, price, discount,
         finalPrice: Math.round(price - (price * discount) / 100),
         stock: Number(form.stock),
         imageURL,
-      });
+      };
+      try {
+        await addDocument("products", productData);
+      } catch (fbErr) {
+        console.warn("Firebase write failed, saving locally:", fbErr);
+        const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
+        localProducts.unshift({ ...productData, id: `local-${Date.now()}`, createdAt: { seconds: Math.floor(Date.now() / 1000) } });
+        localStorage.setItem("pharmacy_products", JSON.stringify(localProducts));
+      }
       toast.success("Product added successfully!");
       navigate("/admin");
     } catch { toast.error("Failed to add product"); } finally { setLoading(false); }

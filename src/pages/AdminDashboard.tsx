@@ -23,6 +23,11 @@ const AdminDashboard = () => {
       let ords: any[] = [];
       try { prods = await getCollection("products") as any[]; } catch { prods = []; }
       try { ords = await getCollection("orders") as any[]; } catch { ords = []; }
+      // Merge local products
+      const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
+      const seenProdIds = new Set(prods.map((p: any) => p.id));
+      for (const lp of localProducts) { if (!seenProdIds.has(lp.id)) prods.push(lp); }
+      // Merge local orders
       const localOrders = JSON.parse(localStorage.getItem("pharmacy_orders") || "[]");
       const seenIds = new Set(ords.map((o: any) => o.orderId));
       for (const lo of localOrders) { if (!seenIds.has(lo.orderId)) ords.push(lo); }
