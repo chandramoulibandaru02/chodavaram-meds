@@ -30,7 +30,7 @@ const ProductListing = () => {
         const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
         const seenIds = new Set(data.map((p: any) => p.id));
         for (const lp of localProducts) { if (!seenIds.has(lp.id)) data.push(lp); }
-        if (data.length > 0) setProducts(data as any);
+        setProducts(data);
       } catch {} finally { setLoading(false); }
     };
     fetchProducts();
