@@ -15,13 +15,25 @@ const EditProduct = () => {
   const [fetching, setFetching] = useState(true);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [customCategory, setCustomCategory] = useState("");
+  const [categories, setCategories] = useState(BASE_CATEGORIES);
   const [form, setForm] = useState({
-    name: "", description: "", price: "", discount: "0", category: CATEGORIES[0],
+    name: "", description: "", price: "", discount: "0", category: BASE_CATEGORIES[0],
     stock: "", manufacturer: "", expiryDate: "", dosage: "", imageURL: "",
   });
 
   useEffect(() => {
-    const fetch = async () => {
+    const loadData = async () => {
+      // Load dynamic categories
+      try {
+        let prods = await getCollection("products") as any[];
+        const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
+        prods = [...prods, ...localProducts];
+        const cats = new Set(BASE_CATEGORIES);
+        prods.forEach((p: any) => { if (p.category) cats.add(p.category); });
+        setCategories(Array.from(cats));
+      } catch {}
+
+      // Load product
       if (!id) return;
       try {
         const doc = await getDocument("products", id);
@@ -29,15 +41,19 @@ const EditProduct = () => {
           const d = doc as any;
           setForm({
             name: d.name || "", description: d.description || "", price: String(d.price || ""),
-            discount: String(d.discount || "0"), category: d.category || CATEGORIES[0],
+            discount: String(d.discount || "0"), category: d.category || BASE_CATEGORIES[0],
             stock: String(d.stock || ""), manufacturer: d.manufacturer || "",
             expiryDate: d.expiryDate || "", dosage: d.dosage || "", imageURL: d.imageURL || "",
           });
+          // If category is custom, set it
+          if (d.category && !BASE_CATEGORIES.includes(d.category)) {
+            setCustomCategory(d.category);
+          }
         }
       } catch { toast.error("Failed to load product"); }
       setFetching(false);
     };
-    fetch();
+    loadData();
   }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
