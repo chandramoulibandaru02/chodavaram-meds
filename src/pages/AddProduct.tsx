@@ -38,8 +38,10 @@ const AddProduct = () => {
       }
       const price = Number(form.price);
       const discount = Number(form.discount);
+      const finalCategory = form.category === "Other" ? (customCategory.trim() || "Uncategorized") : form.category;
       const productData = {
         ...form, price, discount,
+        category: finalCategory,
         finalPrice: Math.round(price - (price * discount) / 100),
         stock: Number(form.stock),
         imageURL,
