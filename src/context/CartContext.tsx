@@ -14,7 +14,7 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
-  addToCart: (item: Omit<CartItem, "quantity">) => void;
+  addToCart: (item: Omit<CartItem, "quantity">, quantity?: number) => void;
   removeFromCart: (id: string) => void;
   updateQuantity: (id: string, quantity: number) => void;
   clearCart: () => void;
@@ -45,19 +45,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items));
   }, [items]);
 
-  const addToCart = (item: Omit<CartItem, "quantity">) => {
+  const addToCart = (item: Omit<CartItem, "quantity">, quantity: number = 1) => {
     setItems((prev) => {
       const existing = prev.find((i) => i.id === item.id);
       if (existing) {
+        const newQty = Math.min(existing.quantity + quantity, item.stock);
         if (existing.quantity >= item.stock) {
           toast.error("Maximum stock reached");
           return prev;
         }
         toast.success(`${item.name} quantity updated`);
-        return prev.map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i));
+        return prev.map((i) => (i.id === item.id ? { ...i, quantity: newQty } : i));
       }
       toast.success(`${item.name} added to cart`);
-      return [...prev, { ...item, quantity: 1 }];
+      return [...prev, { ...item, quantity: Math.min(quantity, item.stock) }];
     });
   };
 

@@ -101,9 +101,7 @@ const ProductDetails = () => {
               className="flex-1"
               disabled={product.stock <= 0}
               onClick={() => {
-                for (let i = 0; i < qty; i++) {
-                  addToCart({ id: product.id, name: product.name, price: product.price, discount: product.discount, finalPrice, imageURL: product.imageURL, stock: product.stock });
-                }
+                addToCart({ id: product.id, name: product.name, price: product.price, discount: product.discount, finalPrice, imageURL: product.imageURL, stock: product.stock }, qty);
               }}
             >
               <ShoppingCart className="h-4 w-4 mr-2" />
