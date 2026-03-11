@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
-import { addDocument } from "@/services/firebase";
+import { addDocument, getDocument, updateDocument } from "@/services/firebase";
 import { sendTelegramNotification } from "@/services/telegram";
 import { formatPrice } from "@/utils/calculateDiscount";
 import { toast } from "sonner";
@@ -20,7 +20,6 @@ const Checkout = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
-    // Clear error on change
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
   };
 
@@ -42,6 +41,30 @@ const Checkout = () => {
 
     setLoading(true);
     try {
+      // Validate stock before placing order
+      for (const item of items) {
+        try {
+          const product = await getDocument("products", item.id);
+          if (product) {
+            const p = product as any;
+            if (p.stock < item.quantity) {
+              toast.error(`Only ${p.stock} items available for ${item.name}`);
+              setLoading(false);
+              return;
+            }
+          }
+        } catch {
+          // If we can't check Firebase, check local
+          const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
+          const local = localProducts.find((p: any) => p.id === item.id);
+          if (local && local.stock < item.quantity) {
+            toast.error(`Only ${local.stock} items available for ${item.name}`);
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
       const orderId = `ORD-${Date.now()}`;
       const orderData = {
         orderId,
@@ -54,6 +77,7 @@ const Checkout = () => {
         paymentMethod: form.paymentMethod === "cod" ? "Cash on Delivery" : "Online Payment",
         status: "Pending",
       };
+
       try {
         await addDocument("orders", orderData);
       } catch (firebaseErr) {
@@ -62,6 +86,27 @@ const Checkout = () => {
         localOrders.unshift({ ...orderData, id: orderId, createdAt: { seconds: Math.floor(Date.now() / 1000) } });
         localStorage.setItem("pharmacy_orders", JSON.stringify(localOrders));
       }
+
+      // Deduct stock after successful order
+      for (const item of items) {
+        try {
+          const product = await getDocument("products", item.id);
+          if (product) {
+            const p = product as any;
+            const newStock = Math.max(0, (p.stock || 0) - item.quantity);
+            await updateDocument("products", item.id, { stock: newStock });
+          }
+        } catch {
+          // Deduct from local storage
+          const localProducts = JSON.parse(localStorage.getItem("pharmacy_products") || "[]");
+          const updated = localProducts.map((p: any) => {
+            if (p.id === item.id) return { ...p, stock: Math.max(0, (p.stock || 0) - item.quantity) };
+            return p;
+          });
+          localStorage.setItem("pharmacy_products", JSON.stringify(updated));
+        }
+      }
+
       sendTelegramNotification({
         orderId,
         customerName: form.name.trim(),

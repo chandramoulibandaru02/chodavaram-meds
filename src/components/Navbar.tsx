@@ -4,7 +4,6 @@ import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { useDebounce } from "@/hooks/use-debounce";
 
 const Navbar = () => {
   const { totalItems } = useCart();
@@ -27,8 +26,8 @@ const Navbar = () => {
       <div className="container flex h-16 items-center gap-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-bold text-xl shrink-0">
-          <span className="gradient-pharmacy text-primary-foreground px-2 py-1 rounded-lg text-sm">💊</span>
-          <span className="hidden sm:inline text-foreground">Pharmacy<span className="text-primary">Chodavaram</span></span>
+          <span className="gradient-pharmacy text-primary-foreground px-2 py-1 rounded-lg text-sm">☀️</span>
+          <span className="hidden sm:inline text-foreground">Sunshine<span className="text-primary">Pharmacy</span></span>
         </Link>
 
         {/* Search */}

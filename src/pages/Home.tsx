@@ -74,7 +74,7 @@ const Home = () => {
               <TrendingUp className="h-4 w-4" /> Trusted by 1000+ retailers across Chodavaram
             </span>
             <h1 className="text-4xl md:text-6xl font-bold text-primary-foreground mb-5 leading-tight">
-              Your Health,<br />Our <span className="underline decoration-accent/60 decoration-4 underline-offset-4">Priority</span>
+              ☀️ Sunshine Pharmacy<br /><span className="underline decoration-accent/60 decoration-4 underline-offset-4">Chodavaram</span>
             </h1>
             <p className="text-primary-foreground/80 text-lg md:text-xl mb-8 max-w-2xl mx-auto">
               Quality medicines at wholesale prices. Order in bulk, delivered to your doorstep in Chodavaram.
@@ -188,7 +188,7 @@ const Home = () => {
       {/* Why Choose Us */}
       <section className="container py-10">
         <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger}>
-          <h2 className="text-2xl font-bold mb-8 text-center">Why Choose Us?</h2>
+          <h2 className="text-2xl font-bold mb-8 text-center">Why Choose Sunshine Pharmacy?</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { icon: Shield, title: "100% Genuine", desc: "All medicines are certified and authentic", color: "text-primary" },
@@ -238,7 +238,7 @@ const Home = () => {
           className="gradient-pharmacy rounded-2xl p-10 text-center text-primary-foreground relative overflow-hidden"
         >
           <h2 className="text-2xl md:text-3xl font-bold mb-3">Need Medicines Urgently?</h2>
-          <p className="text-primary-foreground/80 mb-6">Call us anytime for emergency medicine delivery in Chodavaram</p>
+          <p className="text-primary-foreground/80 mb-6">Call Sunshine Pharmacy for emergency medicine delivery in Chodavaram</p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <a href="tel:+917799303531">
               <Button size="lg" variant="secondary" className="font-semibold text-base px-8">
