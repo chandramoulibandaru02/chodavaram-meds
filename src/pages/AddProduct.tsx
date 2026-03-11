@@ -137,7 +137,7 @@ const AddProduct = () => {
               {errors.mrp && <p className="text-xs text-destructive mt-1">{errors.mrp}</p>}
             </div>
             <div>
-              <label className="text-sm font-medium mb-1 block">Selling Price (₹) *</label>
+              <label className="text-sm font-medium mb-1 block"> Rate (₹) *</label>
               <input name="sellingPrice" type="number" min="0" step="0.01" value={form.sellingPrice} onChange={handleChange}
                 className={`w-full h-10 px-3 rounded-lg border bg-card text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 ${errors.sellingPrice ? "border-destructive" : ""}`} />
               {errors.sellingPrice && <p className="text-xs text-destructive mt-1">{errors.sellingPrice}</p>}
