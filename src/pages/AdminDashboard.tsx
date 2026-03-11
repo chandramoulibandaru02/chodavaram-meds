@@ -2,13 +2,27 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { getCollection, updateDocument, deleteDocument } from "@/services/firebase";
-import { formatPrice } from "@/utils/calculateDiscount";
+import { formatPrice, getProductMRP, getProductSellingPrice, getProductDiscount } from "@/utils/calculateDiscount";
 import { Button } from "@/components/ui/button";
-import { Plus, Package, DollarSign, AlertTriangle, Edit, Trash2, LogOut, Search, TrendingUp, ShoppingBag, Download, RefreshCw, Eye } from "lucide-react";
+import { Plus, Package, DollarSign, AlertTriangle, Edit, Trash2, LogOut, Search, TrendingUp, ShoppingBag, Download, RefreshCw, Eye, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 import ConfirmDialog from "@/components/ConfirmDialog";
 import { DashboardStatSkeleton, TableRowSkeleton, OrderCardSkeleton } from "@/components/SkeletonLoaders";
+
+const getStockStatus = (stock: number) => {
+  if (stock <= 0) return { label: "Out of Stock", cls: "bg-destructive/10 text-destructive" };
+  if (stock <= 10) return { label: "Low Stock", cls: "bg-warning/10 text-warning" };
+  return { label: "In Stock", cls: "bg-success/10 text-success" };
+};
+
+const isExpiringSoon = (expiryDate: string) => {
+  if (!expiryDate) return false;
+  const exp = new Date(expiryDate + "-01");
+  const now = new Date();
+  const threeMonths = new Date(now.getFullYear(), now.getMonth() + 3, 1);
+  return exp <= threeMonths;
+};
 
 const AdminDashboard = () => {
   const { adminLogout } = useAuth();
@@ -40,8 +54,10 @@ const AdminDashboard = () => {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const totalRevenue = useMemo(() => orders.reduce((sum: number, o: any) => sum + (o.totalAmount || 0), 0), [orders]);
-  const lowStock = useMemo(() => products.filter((p: any) => p.stock <= 5), [products]);
+  const lowStock = useMemo(() => products.filter((p: any) => p.stock > 0 && p.stock <= 10), [products]);
+  const outOfStock = useMemo(() => products.filter((p: any) => p.stock <= 0), [products]);
   const pendingOrders = useMemo(() => orders.filter((o: any) => o.status === "Pending"), [orders]);
+  const expiringProducts = useMemo(() => products.filter((p: any) => isExpiringSoon(p.expiryDate)), [products]);
 
   const filteredProducts = useMemo(() => products.filter((p: any) =>
     !searchQuery || p.name?.toLowerCase().includes(searchQuery.toLowerCase()) || p.category?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -70,7 +86,6 @@ const AdminDashboard = () => {
   };
 
   const handleUpdateOrderStatus = async (id: string, status: string) => {
-    // Optimistic update
     setOrders(prev => prev.map(o => (o.id === id || o.orderId === id) ? { ...o, status } : o));
     try {
       try { await updateDocument("orders", id, { status }); } catch {
@@ -122,7 +137,7 @@ const AdminDashboard = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Admin Dashboard</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">☀️ Sunshine Pharmacy Dashboard</h1>
           <p className="text-sm text-muted-foreground">Manage your pharmacy inventory and orders</p>
         </div>
         <div className="flex gap-2 flex-wrap">
@@ -260,16 +275,49 @@ const AdminDashboard = () => {
             </div>
           </div>
 
+          {/* Alerts Section */}
           {lowStock.length > 0 && (
-            <div className="border rounded-xl p-5 bg-card border-destructive/30">
-              <h3 className="font-bold mb-3 text-destructive flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Low Stock Alerts ({lowStock.length})</h3>
+            <div className="border rounded-xl p-5 bg-card border-warning/30">
+              <h3 className="font-bold mb-3 text-warning flex items-center gap-2"><AlertTriangle className="h-4 w-4" /> Low Stock Alerts ({lowStock.length})</h3>
               <div className="grid sm:grid-cols-2 gap-2">
                 {lowStock.map((p: any) => (
+                  <Link to={`/admin/edit-product/${p.id}`} key={p.id}
+                    className="flex justify-between items-center p-3 rounded-lg bg-warning/5 text-sm hover:bg-warning/10 transition-colors"
+                  >
+                    <span className="font-medium">{p.name}</span>
+                    <span className="text-warning font-bold">⚠ {p.stock} left</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {outOfStock.length > 0 && (
+            <div className="border rounded-xl p-5 bg-card border-destructive/30">
+              <h3 className="font-bold mb-3 text-destructive flex items-center gap-2"><Package className="h-4 w-4" /> Out of Stock ({outOfStock.length})</h3>
+              <div className="grid sm:grid-cols-2 gap-2">
+                {outOfStock.map((p: any) => (
                   <Link to={`/admin/edit-product/${p.id}`} key={p.id}
                     className="flex justify-between items-center p-3 rounded-lg bg-destructive/5 text-sm hover:bg-destructive/10 transition-colors"
                   >
                     <span className="font-medium">{p.name}</span>
-                    <span className="text-destructive font-bold">{p.stock} left</span>
+                    <span className="text-destructive font-bold">❌ Out of Stock</span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {expiringProducts.length > 0 && (
+            <div className="border rounded-xl p-5 bg-card border-warning/30">
+              <h3 className="font-bold mb-3 text-warning flex items-center gap-2"><Calendar className="h-4 w-4" /> Expiry Alerts ({expiringProducts.length})</h3>
+              <div className="grid sm:grid-cols-2 gap-2">
+                {expiringProducts.map((p: any) => (
+                  <Link to={`/admin/edit-product/${p.id}`} key={p.id}
+                    className="flex justify-between items-center p-3 rounded-lg bg-warning/5 text-sm hover:bg-warning/10 transition-colors"
+                  >
+                    <span className="font-medium">{p.name}</span>
+                    <span className="text-warning font-bold">Exp: {p.expiryDate}</span>
                   </Link>
                 ))}
               </div>
@@ -284,10 +332,11 @@ const AdminDashboard = () => {
           {loading ? (
             <div className="hidden sm:block border rounded-xl overflow-hidden bg-card">
               <table className="w-full text-sm"><thead className="bg-secondary/50"><tr>
-                <th className="text-left p-3 font-semibold">Product</th><th className="text-left p-3 font-semibold">Price</th>
-                <th className="text-left p-3 font-semibold">Discount</th><th className="text-left p-3 font-semibold">Stock</th>
+                <th className="text-left p-3 font-semibold">Product</th><th className="text-left p-3 font-semibold">MRP</th>
+                <th className="text-left p-3 font-semibold">Selling Price</th><th className="text-left p-3 font-semibold">Discount</th>
+                <th className="text-left p-3 font-semibold">Stock</th><th className="text-left p-3 font-semibold">Status</th>
                 <th className="text-right p-3 font-semibold">Actions</th>
-              </tr></thead><tbody>{Array.from({ length: 5 }).map((_, i) => <TableRowSkeleton key={i} />)}</tbody></table>
+              </tr></thead><tbody>{Array.from({ length: 5 }).map((_, i) => <TableRowSkeleton key={i} cols={7} />)}</tbody></table>
             </div>
           ) : (
             <>
@@ -298,52 +347,58 @@ const AdminDashboard = () => {
                     <thead className="bg-secondary/50">
                       <tr>
                         <th className="text-left p-3 font-semibold">Product</th>
-                        <th className="text-left p-3 font-semibold">Price</th>
+                        <th className="text-left p-3 font-semibold">MRP</th>
+                        <th className="text-left p-3 font-semibold">Selling Price</th>
                         <th className="text-left p-3 font-semibold">Discount</th>
                         <th className="text-left p-3 font-semibold">Stock</th>
+                        <th className="text-left p-3 font-semibold">Status</th>
                         <th className="text-right p-3 font-semibold">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredProducts.length === 0 ? (
-                        <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">
+                        <tr><td colSpan={7} className="text-center py-8 text-muted-foreground">
                           {searchQuery ? "No products match your search" : "No products yet. Add your first product!"}
                         </td></tr>
-                      ) : filteredProducts.map((p: any) => (
-                        <tr key={p.id} className="border-t hover:bg-secondary/20 transition-colors">
-                          <td className="p-3">
-                            <div className="flex items-center gap-3">
-                              <img src={p.imageURL || "/placeholder.svg"} alt="" className="w-10 h-10 rounded-lg object-cover bg-secondary/50" />
-                              <div>
-                                <p className="font-medium">{p.name}</p>
-                                <p className="text-xs text-muted-foreground">{p.category}</p>
+                      ) : filteredProducts.map((p: any) => {
+                        const mrp = getProductMRP(p);
+                        const sp = getProductSellingPrice(p);
+                        const disc = getProductDiscount(p);
+                        const status = getStockStatus(p.stock);
+                        return (
+                          <tr key={p.id} className="border-t hover:bg-secondary/20 transition-colors">
+                            <td className="p-3">
+                              <div className="flex items-center gap-3">
+                                <img src={p.imageURL || "/placeholder.svg"} alt="" className="w-10 h-10 rounded-lg object-cover bg-secondary/50" />
+                                <div>
+                                  <p className="font-medium">{p.name}</p>
+                                  <p className="text-xs text-muted-foreground">{p.category}</p>
+                                </div>
                               </div>
-                            </div>
-                          </td>
-                          <td className="p-3 font-medium">{formatPrice(p.price)}</td>
-                          <td className="p-3">
-                            {p.discount > 0 ? <span className="bg-accent/10 text-accent text-xs font-bold px-2 py-0.5 rounded">{p.discount}%</span> : <span className="text-muted-foreground">—</span>}
-                          </td>
-                          <td className="p-3">
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                              p.stock <= 5 ? "bg-destructive/10 text-destructive" :
-                              p.stock <= 20 ? "bg-warning/10 text-warning" :
-                              "bg-success/10 text-success"
-                            }`}>{p.stock} in stock</span>
-                          </td>
-                          <td className="p-3 text-right">
-                            <Link to={`/admin/edit-product/${p.id}`}><Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button></Link>
-                            <ConfirmDialog
-                              trigger={<Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button>}
-                              title="Delete Product"
-                              description={`Are you sure you want to delete "${p.name}"? This action cannot be undone.`}
-                              onConfirm={() => handleDeleteProduct(p.id)}
-                              confirmText="Delete"
-                              destructive
-                            />
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td className="p-3 text-muted-foreground line-through">{formatPrice(mrp)}</td>
+                            <td className="p-3 font-bold text-primary">{formatPrice(sp)}</td>
+                            <td className="p-3">
+                              {disc > 0 ? <span className="bg-destructive/10 text-destructive text-xs font-bold px-2 py-0.5 rounded">{Math.round(disc)}% OFF</span> : <span className="text-muted-foreground">—</span>}
+                            </td>
+                            <td className="p-3 font-medium">{p.stock}</td>
+                            <td className="p-3">
+                              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${status.cls}`}>{status.label}</span>
+                            </td>
+                            <td className="p-3 text-right">
+                              <Link to={`/admin/edit-product/${p.id}`}><Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button></Link>
+                              <ConfirmDialog
+                                trigger={<Button variant="ghost" size="icon"><Trash2 className="h-4 w-4 text-destructive" /></Button>}
+                                title="Delete Product"
+                                description={`Are you sure you want to delete "${p.name}"? This action cannot be undone.`}
+                                onConfirm={() => handleDeleteProduct(p.id)}
+                                confirmText="Delete"
+                                destructive
+                              />
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -355,35 +410,38 @@ const AdminDashboard = () => {
                   <p className="text-center py-8 text-muted-foreground">
                     {searchQuery ? "No products match your search" : "No products yet. Add your first product!"}
                   </p>
-                ) : filteredProducts.map((p: any) => (
-                  <div key={p.id} className="border rounded-xl p-3 bg-card flex gap-3 items-start">
-                    <img src={p.imageURL || "/placeholder.svg"} alt="" className="w-14 h-14 rounded-lg object-cover bg-secondary/50 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm truncate">{p.name}</p>
-                      <p className="text-xs text-muted-foreground">{p.category}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="font-bold text-primary text-sm">{formatPrice(p.price)}</span>
-                        {p.discount > 0 && <span className="bg-accent/10 text-accent text-[10px] font-bold px-1.5 py-0.5 rounded">{p.discount}% OFF</span>}
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
-                          p.stock <= 5 ? "bg-destructive/10 text-destructive" :
-                          p.stock <= 20 ? "bg-warning/10 text-warning" :
-                          "bg-success/10 text-success"
-                        }`}>{p.stock} left</span>
+                ) : filteredProducts.map((p: any) => {
+                  const mrp = getProductMRP(p);
+                  const sp = getProductSellingPrice(p);
+                  const disc = getProductDiscount(p);
+                  const status = getStockStatus(p.stock);
+                  return (
+                    <div key={p.id} className="border rounded-xl p-3 bg-card flex gap-3 items-start">
+                      <img src={p.imageURL || "/placeholder.svg"} alt="" className="w-14 h-14 rounded-lg object-cover bg-secondary/50 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-sm truncate">{p.name}</p>
+                        <p className="text-xs text-muted-foreground">{p.category}</p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <span className="text-xs text-muted-foreground line-through">{formatPrice(mrp)}</span>
+                          <span className="font-bold text-primary text-sm">{formatPrice(sp)}</span>
+                          {disc > 0 && <span className="bg-destructive/10 text-destructive text-[10px] font-bold px-1.5 py-0.5 rounded">{Math.round(disc)}% OFF</span>}
+                          <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${status.cls}`}>{p.stock} · {status.label}</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1 shrink-0">
+                        <Link to={`/admin/edit-product/${p.id}`}><Button variant="ghost" size="icon" className="h-8 w-8"><Edit className="h-3.5 w-3.5" /></Button></Link>
+                        <ConfirmDialog
+                          trigger={<Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>}
+                          title="Delete Product"
+                          description={`Delete "${p.name}"? This cannot be undone.`}
+                          onConfirm={() => handleDeleteProduct(p.id)}
+                          confirmText="Delete"
+                          destructive
+                        />
                       </div>
                     </div>
-                    <div className="flex flex-col gap-1 shrink-0">
-                      <Link to={`/admin/edit-product/${p.id}`}><Button variant="ghost" size="icon" className="h-8 w-8"><Edit className="h-3.5 w-3.5" /></Button></Link>
-                      <ConfirmDialog
-                        trigger={<Button variant="ghost" size="icon" className="h-8 w-8"><Trash2 className="h-3.5 w-3.5 text-destructive" /></Button>}
-                        title="Delete Product"
-                        description={`Delete "${p.name}"? This cannot be undone.`}
-                        onConfirm={() => handleDeleteProduct(p.id)}
-                        confirmText="Delete"
-                        destructive
-                      />
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </>
           )}

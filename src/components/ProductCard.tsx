@@ -1,15 +1,17 @@
 import { Link } from "react-router-dom";
-import { ShoppingCart, Check } from "lucide-react";
+import { ShoppingCart, Check, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
-import { formatPrice, calculateFinalPrice } from "@/utils/calculateDiscount";
+import { formatPrice, getProductMRP, getProductSellingPrice, getProductDiscount } from "@/utils/calculateDiscount";
 import { useState } from "react";
 
 interface Product {
   id: string;
   name: string;
-  price: number;
-  discount: number;
+  price?: number;
+  mrp?: number;
+  sellingPrice?: number;
+  discount?: number;
   imageURL: string;
   category: string;
   stock: number;
@@ -18,17 +20,20 @@ interface Product {
 
 const ProductCard = ({ product }: { product: Product }) => {
   const { addToCart } = useCart();
-  const finalPrice = calculateFinalPrice(product.price, product.discount);
+  const mrp = getProductMRP(product);
+  const sellingPrice = getProductSellingPrice(product);
+  const discount = getProductDiscount(product);
   const outOfStock = product.stock <= 0;
+  const lowStock = product.stock > 0 && product.stock <= 10;
   const [added, setAdded] = useState(false);
 
   const handleAddToCart = () => {
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.price,
-      discount: product.discount,
-      finalPrice,
+      price: mrp,
+      discount: discount,
+      finalPrice: sellingPrice,
       imageURL: product.imageURL,
       stock: product.stock,
     });
@@ -47,9 +52,9 @@ const ProductCard = ({ product }: { product: Product }) => {
             loading="lazy"
           />
         </div>
-        {product.discount > 0 && (
-          <span className="absolute top-2 left-2 gradient-offer text-accent-foreground text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm">
-            {product.discount}% OFF
+        {discount > 0 && (
+          <span className="absolute top-2 left-2 bg-destructive text-destructive-foreground text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm">
+            {Math.round(discount)}% OFF
           </span>
         )}
         {outOfStock && (
@@ -65,11 +70,17 @@ const ProductCard = ({ product }: { product: Product }) => {
         </Link>
         {product.manufacturer && <p className="text-[11px] text-muted-foreground mt-1">by {product.manufacturer}</p>}
         <div className="flex items-center gap-2 mt-2.5">
-          <span className="font-bold text-primary text-base">{formatPrice(finalPrice)}</span>
-          {product.discount > 0 && (
-            <span className="text-xs text-muted-foreground line-through">{formatPrice(product.price)}</span>
+          <span className="font-bold text-primary text-base">{formatPrice(sellingPrice)}</span>
+          {discount > 0 && (
+            <span className="text-xs text-muted-foreground line-through">{formatPrice(mrp)}</span>
           )}
         </div>
+        {/* Stock status */}
+        {!outOfStock && lowStock && (
+          <p className="text-[11px] text-warning font-medium mt-1 flex items-center gap-1">
+            <AlertTriangle className="h-3 w-3" /> Only {product.stock} left
+          </p>
+        )}
         <Button
           size="sm"
           className={`w-full mt-3 transition-all duration-300 ${added ? "bg-success hover:bg-success" : ""}`}

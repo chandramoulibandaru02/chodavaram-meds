@@ -7,10 +7,10 @@ const Footer = () => (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
           <h3 className="font-bold text-lg mb-3">
-            💊 Pharmacy<span className="text-primary">Chodavaram</span>
+            ☀️ Sunshine<span className="text-primary">Pharmacy</span>
           </h3>
           <p className="text-muted-foreground text-sm">
-            Your trusted pharmacy in Chodavaram. Quality medicines delivered to your doorstep.
+            Your trusted pharmacy in Chodavaram. Quality medicines delivered to your doorstep at wholesale prices.
           </p>
         </div>
         <div>
@@ -31,7 +31,7 @@ const Footer = () => (
         </div>
       </div>
       <div className="border-t mt-6 pt-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} PharmacyChodavaram. All rights reserved.
+        © {new Date().getFullYear()} Sunshine Pharmacy Chodavaram. All rights reserved.
       </div>
     </div>
   </footer>
